@@ -1,0 +1,10 @@
+[
+    {
+        "type": 0,
+        "stat": "health",
+        "value": 1,
+        "meta": {
+            "name": "Heart"
+        }
+    }
+]

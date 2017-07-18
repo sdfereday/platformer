@@ -1,0 +1,23 @@
+[
+    {
+        "usesGambit": "flyer",
+        "properties": {
+            "isBoss": false,
+            "stats": {
+                "health": 1
+            },
+            "onkill": {
+                "score": 100
+            },
+            "immunity": {
+                "top": false,
+                "left": false,
+                "bottom": false,
+                "right": false
+            }
+        },
+        "meta": {
+            "name": "Bug"
+        }
+    }
+]

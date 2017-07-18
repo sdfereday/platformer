@@ -1,7 +1,6 @@
 import 'pixi';
 import 'p2';
 import Phaser from 'phaser';
-import mix from './helpers/MixinHelper';
 import GameState from './states/GameState';
 
 // https://github.com/belohlavek/phaser-es6-boilerplate

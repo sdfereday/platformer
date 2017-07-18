@@ -1,3 +1,4 @@
+import mix from './helpers/Mixin';
 import Phaser from 'phaser';
 
 // class BaseClass {
@@ -68,6 +69,8 @@ class GameState {
       groundBlock.body.allowGravity = false;
       this.ground.add(groundBlock);
     }
+
+    // ... This is actually where you 'might' consider building the map. - TODO
 
     // Capture certain keys to prevent their default actions in the browser.
     // This is only necessary because this is an HTML5 game. Games on other
