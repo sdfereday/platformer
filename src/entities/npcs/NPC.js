@@ -1,3 +1,5 @@
+import mix from '../../helpers/Mixin';
+
 class NPC extends mix(Phaser.Sprite).with() {
 
     constructor(args) {

@@ -1,6 +1,6 @@
 import mix from '../helpers/Mixin';
 import Phaser from 'phaser';
-import BlockFactory from '../factories/BlockFactory';
+import EntityFactory from '../factories/EntityFactory';
 import MapMaker from '../level/MapMaker';
 import Player from '../entities/user/Player';
 
@@ -52,11 +52,11 @@ class GameState {
     this.game.stage.backgroundColor = 0x4488cc;
 
     // Define movement constants
-    this.MAX_SPEED = 500; // pixels/second
-    this.ACCELERATION = 1500; // pixels/second/second
-    this.DRAG = 600; // pixels/second
+    this.MAX_SPEED = 250; // pixels/second
+    this.ACCELERATION = 2500; // pixels/second/second
+    this.DRAG = 1500; // pixels/second
     this.GRAVITY = 2600; // pixels/second/second
-    this.JUMP_SPEED = -700; // pixels/second (negative y is up)
+    this.JUMP_SPEED = -500; // pixels/second (negative y is up)
 
     // Create a player sprite
     this.player = new Player({
@@ -74,8 +74,9 @@ class GameState {
     // Flag to track if the jump button is pressed
     this.jumping = false;
 
-    // Create some ground for the player to walk on
+    // Create some groups to house the tiles / pickups, etc
     this.ground = this.game.add.group();
+    this.pickups = this.game.add.group();
 
     // Retrieve the levels map data and set the tile scaling
     let mapData = this.game.cache.getJSON('mapdata-sandbox');
@@ -83,7 +84,7 @@ class GameState {
 
     // Now we can generate the map
     let levelMap = MapMaker.create(mapData, tileSize);
-    this.placeBlocks(levelMap, tileSize);
+    this.placeEntities(levelMap, tileSize);
 
     // Capture certain keys to prevent their default actions in the browser.
     // This is only necessary because this is an HTML5 game. Games on other
@@ -99,7 +100,7 @@ class GameState {
     this.drawHeightMarkers();
   }
 
-  placeBlocks(mapData, tileSize) {
+  placeEntities(mapData, tileSize) {
 
     let tilex = 0;
     let tiley = 0;
@@ -114,9 +115,10 @@ class GameState {
         tilex = 0;
       }
 
-      if (mapData.atIndex(x) > 0) {
+      if (mapData.atIndex(x) === 1) {
 
-        let groundBlock = BlockFactory.create({
+        let groundBlock = EntityFactory.create({
+          type: 0,
           game: this.game,
           x: tilex * tileSize,
           y: tiley * tileSize,
@@ -124,6 +126,34 @@ class GameState {
         });
 
         this.ground.add(groundBlock);
+
+      }
+
+      if (mapData.atIndex(x) === 2) {
+
+        let groundBlock = EntityFactory.create({
+          type: 1,
+          game: this.game,
+          x: tilex * tileSize,
+          y: tiley * tileSize,
+          name: 'ground'
+        });
+
+        this.ground.add(groundBlock);
+
+      }
+
+      if (mapData.atIndex(x) === 3) {
+
+        let healthPickup = EntityFactory.create({
+          type: 2,
+          game: this.game,
+          x: tilex * tileSize,
+          y: tiley * tileSize,
+          name: 'health'
+        });
+
+        this.pickups.add(healthPickup);
 
       }
 
@@ -137,7 +167,7 @@ class GameState {
     let bitmap = this.game.add.bitmapData(this.game.width, this.game.height);
 
     // These functions use the canvas context to draw lines using the canvas API
-    for (let y = this.game.height - 32; y >= 64; y -= 32) {
+    for (let y = this.game.height - 20; y >= 0; y -= 32) {
       bitmap.context.beginPath();
       bitmap.context.strokeStyle = 'rgba(255, 255, 255, 0.2)';
       bitmap.context.moveTo(0, y);
@@ -150,17 +180,27 @@ class GameState {
 
   // The update() method is called every frame
   update() {
+
     // Collide the player with the ground
     this.game.physics.arcade.collide(this.player, this.ground);
+
+    // Collide the player with pickups
+    this.game.physics.arcade.overlap(this.player, this.pickups, (a, b) => b.kill());
+
+    // Reset velocity counter (to avoid overrun)
+    //this.player.body.velocity.x = 0;
 
     if (this.leftInputIsActive()) {
       // If the LEFT key is down, set the player velocity to move left
       this.player.body.acceleration.x = -this.ACCELERATION;
+      //this.player.body.velocity.x = -this.ACCELERATION;
     } else if (this.rightInputIsActive()) {
       // If the RIGHT key is down, set the player velocity to move right
       this.player.body.acceleration.x = this.ACCELERATION;
+      //this.player.body.velocity.x = this.ACCELERATION;
     } else {
       this.player.body.acceleration.x = 0;
+      //this.player.body.velocity.x = 0;
     }
 
     // Set a variable that is true when the player is touching the ground
