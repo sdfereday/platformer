@@ -23,3 +23,6 @@ https://github.com/belohlavek/phaser-es6-boilerplate
 https://github.com/lean/phaser-es6-webpack
 http://rroylance.github.io/phaser-npm-webpack-typescript-starter-project/
 https://www.npmjs.com/package/phaser
+
+You can also view the progress on Trello:
+https://trello.com/b/SkyrCjrm/platformer
