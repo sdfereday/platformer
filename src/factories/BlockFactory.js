@@ -1,8 +1,10 @@
+import Block from '../entities/blocks/Block';
+
 class BlockFactory {
 
-    static Create(Cns, options) {
+    static create(options) {
 
-        return Cns ? new Cns(options) : {};
+        return new Block(options);
 
     }
 

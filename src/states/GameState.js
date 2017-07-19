@@ -1,5 +1,8 @@
 import mix from '../helpers/Mixin';
 import Phaser from 'phaser';
+import BlockFactory from '../factories/BlockFactory';
+import MapMaker from '../level/MapMaker';
+import Player from '../entities/user/Player';
 
 // class BaseClass {
 //   // ...
@@ -22,15 +25,25 @@ class GameState {
   // Prototypal methods
   // Load images and sounds
   preload() {
+
+    // Differs per level
+    let levelConf = {
+      groundTile: './assets/gfx/ground.png',
+      mapData: './assets/mapdata/sandbox.json'
+    }
+
     // Some media to play with
-    this.game.load.image('ground', './assets/gfx/ground.png');
+    this.game.load.image('ground', levelConf.groundTile);
     this.game.load.image('player', './assets/gfx/player.png');
+
     // The various amounts of game data used
     this.game.load.json('gambits', './assets/gamedata/gambits.json');
     this.game.load.json('enemies', './assets/gamedata/enemies.json');
     this.game.load.json('items', './assets/gamedata/items.json');
+
     // Map data (sandbox is all we have right now)
-    this.game.load.json('mapdata-sandbox', './assets/mapdata/sandbox.json');
+    this.game.load.json('mapdata-sandbox', levelConf.mapData);
+
   }
 
   // Setup the example
@@ -46,19 +59,14 @@ class GameState {
     this.JUMP_SPEED = -700; // pixels/second (negative y is up)
 
     // Create a player sprite
-    this.player = this.game.add.sprite(this.game.width / 2, this.game.height - 64, 'player');
-
-    // Enable physics on the player
-    this.game.physics.enable(this.player, Phaser.Physics.ARCADE);
-
-    // Make player collide with world boundaries so he doesn't leave the stage
-    this.player.body.collideWorldBounds = true;
-
-    // Set player minimum and maximum movement speed
-    this.player.body.maxVelocity.setTo(this.MAX_SPEED, this.MAX_SPEED * 10); // x, y
-
-    // Add drag to the player that slows them down when they are not accelerating
-    this.player.body.drag.setTo(this.DRAG, 0); // x, y
+    this.player = new Player({
+      game: this.game,
+      x: this.game.width / 2,
+      y: this.game.height - 64,
+      name: 'player',
+      MAX_SPEED: this.MAX_SPEED,
+      DRAG: this.DRAG
+    });
 
     // Since we're jumping we need gravity
     this.game.physics.arcade.gravity.y = this.GRAVITY;
@@ -69,38 +77,13 @@ class GameState {
     // Create some ground for the player to walk on
     this.ground = this.game.add.group();
 
-    // ... This is actually where you 'might' consider building the map. - TODO
+    // Retrieve the levels map data and set the tile scaling
     let mapData = this.game.cache.getJSON('mapdata-sandbox');
     let tileSize = 32;
-    let w = mapData.map[0].length;
-    let h = mapData.map.length;
-    let tilex = 0;
-    let tiley = 0;
 
-    let flattened = mapData.map.reduce((a, b) => a.concat(b));
-
-    for (let x = 0; x < w * h; x += 1) {
-
-      tilex += 1;
-
-      if (x % w === 0) {
-        tiley += 1;
-        tilex = 0;
-      }
-
-      if (flattened[x] > 0) {
-
-        let groundBlock = this.game.add.sprite(tilex * tileSize, tiley * tileSize, 'ground');
-
-        // Add the ground blocks, enable physics on each, make them immovable (would be more efficient to use tiles, but these are good for dynamic blocks)
-        this.game.physics.enable(groundBlock, Phaser.Physics.ARCADE);
-        groundBlock.body.immovable = true;
-        groundBlock.body.allowGravity = false;
-        this.ground.add(groundBlock);
-
-      }
-
-    }
+    // Now we can generate the map
+    let levelMap = MapMaker.create(mapData, tileSize);
+    this.placeBlocks(levelMap, tileSize);
 
     // Capture certain keys to prevent their default actions in the browser.
     // This is only necessary because this is an HTML5 game. Games on other
@@ -114,6 +97,38 @@ class GameState {
 
     // Just for fun, draw some height markers so we can see how high we're jumping
     this.drawHeightMarkers();
+  }
+
+  placeBlocks(mapData, tileSize) {
+
+    let tilex = 0;
+    let tiley = 0;
+
+    // Map out the various blocks on the map with its data
+    for (let x = 0; x < mapData.area; x += 1) {
+
+      tilex += 1;
+
+      if (x % mapData.width === 0) {
+        tiley += 1;
+        tilex = 0;
+      }
+
+      if (mapData.atIndex(x) > 0) {
+
+        let groundBlock = BlockFactory.create({
+          game: this.game,
+          x: tilex * tileSize,
+          y: tiley * tileSize,
+          name: 'ground'
+        });
+
+        this.ground.add(groundBlock);
+
+      }
+
+    }
+
   }
 
   // This function draws horizontal lines across the stage

@@ -1,8 +1,8 @@
-class NPC extends Phaser.Sprite {
+class NPC extends mix(Phaser.Sprite).with() {
 
     constructor(args) {
 
-        super(this, args.game, args.x, args.y, args.name);
+        super(args.game, args.x, args.y, args.name);
         args.game.add.existing(this);
 
     }
