@@ -1,4 +1,4 @@
-import mix from './helpers/Mixin';
+import mix from '../helpers/Mixin';
 import Phaser from 'phaser';
 
 // class BaseClass {
@@ -22,8 +22,15 @@ class GameState {
   // Prototypal methods
   // Load images and sounds
   preload() {
+    // Some media to play with
     this.game.load.image('ground', './assets/gfx/ground.png');
     this.game.load.image('player', './assets/gfx/player.png');
+    // The various amounts of game data used
+    this.game.load.json('gambits', './assets/gamedata/gambits.json');
+    this.game.load.json('enemies', './assets/gamedata/enemies.json');
+    this.game.load.json('items', './assets/gamedata/items.json');
+    // Map data (sandbox is all we have right now)
+    this.game.load.json('mapdata-sandbox', './assets/mapdata/sandbox.json');
   }
 
   // Setup the example
@@ -61,16 +68,39 @@ class GameState {
 
     // Create some ground for the player to walk on
     this.ground = this.game.add.group();
-    for (let x = 0; x < this.game.width; x += 32) {
-      // Add the ground blocks, enable physics on each, make them immovable
-      let groundBlock = this.game.add.sprite(x, this.game.height - 32, 'ground');
-      this.game.physics.enable(groundBlock, Phaser.Physics.ARCADE);
-      groundBlock.body.immovable = true;
-      groundBlock.body.allowGravity = false;
-      this.ground.add(groundBlock);
-    }
 
     // ... This is actually where you 'might' consider building the map. - TODO
+    let mapData = this.game.cache.getJSON('mapdata-sandbox');
+    let tileSize = 32;
+    let w = mapData.map[0].length;
+    let h = mapData.map.length;
+    let tilex = 0;
+    let tiley = 0;
+
+    let flattened = mapData.map.reduce((a, b) => a.concat(b));
+
+    for (let x = 0; x < w * h; x += 1) {
+
+      tilex += 1;
+
+      if (x % w === 0) {
+        tiley += 1;
+        tilex = 0;
+      }
+
+      if (flattened[x] > 0) {
+
+        let groundBlock = this.game.add.sprite(tilex * tileSize, tiley * tileSize, 'ground');
+
+        // Add the ground blocks, enable physics on each, make them immovable (would be more efficient to use tiles, but these are good for dynamic blocks)
+        this.game.physics.enable(groundBlock, Phaser.Physics.ARCADE);
+        groundBlock.body.immovable = true;
+        groundBlock.body.allowGravity = false;
+        this.ground.add(groundBlock);
+
+      }
+
+    }
 
     // Capture certain keys to prevent their default actions in the browser.
     // This is only necessary because this is an HTML5 game. Games on other
