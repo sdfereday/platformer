@@ -14,6 +14,8 @@ class Pickup extends mix(Phaser.Sprite).with() {
         this.body.allowGravity = false;
         this.anchor.y = 0.5;
 
+        this.entityData = args.properties;
+
     }
 
 }

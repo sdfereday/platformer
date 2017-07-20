@@ -1,10 +1,15 @@
 [
     {
-        "usesGambit": "flyer",
+        "id": "bug",
+        "meta": {
+            "name": "Bug"
+        },
         "properties": {
             "isBoss": false,
-            "stats": {
-                "health": 1
+            "status": {
+                "has_los": false,
+                "hp_max": 2,
+                "hp_now": 2
             },
             "onkill": {
                 "score": 100
@@ -14,10 +19,50 @@
                 "left": false,
                 "bottom": false,
                 "right": false
-            }
-        },
-        "meta": {
-            "name": "Bug"
+            },
+            "gambits": [
+                {
+                    "identifier": "hp_now",
+                    "against": "hp_max",
+                    "operator": "greater_than",
+                    "percentile": true,
+                    "isDefault": true,
+                    "value": 0.5,
+                    "actionIfTrue": "roam",
+                    "and": [
+                        {
+                            "identifier": "has_los",
+                            "operator": "boolean",
+                            "value": false
+                        }
+                    ]
+                },
+                {
+                    "identifier": "hp_now",
+                    "against": "hp_max",
+                    "operator": "greater_than",
+                    "percentile": true,
+                    "isDefault": false,
+                    "value": 0.5,
+                    "and": [
+                        {
+                            "identifier": "has_los",
+                            "operator": "boolean",
+                            "value": true
+                        }
+                    ],
+                    "actionIfTrue": "follow"
+                },
+                {
+                    "identifier": "hp_now",
+                    "against": "hp_max",
+                    "operator": "less_than",
+                    "percentile": true,
+                    "isDefault": false,
+                    "value": 0.5,
+                    "actionIfTrue": "escape"
+                }
+            ]
         }
     }
 ]

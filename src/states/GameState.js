@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import EntityFactory from '../factories/EntityFactory';
 import MapMaker from '../level/MapMaker';
 import Player from '../entities/user/Player';
+import Bug from '../entities/npcs/Bug';
 
 // class BaseClass {
 //   // ...
@@ -35,9 +36,9 @@ class GameState {
     // Some media to play with
     this.game.load.image('ground', levelConf.groundTile);
     this.game.load.image('player', './assets/gfx/player.png');
+    this.game.load.image('bug', './assets/gfx/bug.png');
 
     // The various amounts of game data used
-    this.game.load.json('gambits', './assets/gamedata/gambits.json');
     this.game.load.json('enemies', './assets/gamedata/enemies.json');
     this.game.load.json('items', './assets/gamedata/items.json');
 
@@ -76,6 +77,7 @@ class GameState {
 
     // Create some groups to house the tiles / pickups, etc
     this.ground = this.game.add.group();
+    this.enemies = this.game.add.group();
     this.pickups = this.game.add.group();
 
     // Retrieve the levels map data and set the tile scaling
@@ -85,6 +87,19 @@ class GameState {
     // Now we can generate the map
     let levelMap = MapMaker.create(mapData, tileSize);
     this.placeEntities(levelMap, tileSize);
+
+    // Place an enemy (will streamline more later)
+    let bugProps = this.game.cache.getJSON('enemies').find(x => x.id === 'bug').properties;
+    let bug = new Bug({
+      game: this.game,
+      x: this.game.width / 2,
+      y: this.game.height - 64,
+      name: 'bug',
+      target: this.player,
+      properties: bugProps
+    });
+
+    this.enemies.add(bug);
 
     // Capture certain keys to prevent their default actions in the browser.
     // This is only necessary because this is an HTML5 game. Games on other
@@ -181,8 +196,9 @@ class GameState {
   // The update() method is called every frame
   update() {
 
-    // Collide the player with the ground
+    // Collide layers and players
     this.game.physics.arcade.collide(this.player, this.ground);
+    this.game.physics.arcade.collide(this.enemies, this.ground);
 
     // Collide the player with pickups
     this.game.physics.arcade.overlap(this.player, this.pickups, (a, b) => b.kill());

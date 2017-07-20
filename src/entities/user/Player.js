@@ -7,17 +7,12 @@ class Player extends Phaser.Sprite {
 
         let game = args.game;
 
-        // Enable physics on the player
         game.physics.enable(this, Phaser.Physics.ARCADE);
-
-        // Make player collide with world boundaries so he doesn't leave the stage
         this.body.collideWorldBounds = true;
+        this.body.maxVelocity.setTo(args.MAX_SPEED, args.MAX_SPEED * 10);
+        this.body.drag.setTo(args.DRAG, 0);
 
-        // Set player minimum and maximum movement speed
-        this.body.maxVelocity.setTo(args.MAX_SPEED, args.MAX_SPEED * 10); // x, y
-
-        // Add drag to the player that slows them down when they are not accelerating
-        this.body.drag.setTo(args.DRAG, 0); // x, y
+        this.entityData = args.properties;
 
     }
 
