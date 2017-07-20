@@ -2,6 +2,7 @@ import mix from '../helpers/Mixin';
 import Phaser from 'phaser';
 import EntityFactory from '../factories/EntityFactory';
 import MapMaker from '../level/MapMaker';
+import MapHelpers from '../helpers/MapHelpers';
 import Player from '../entities/user/Player';
 import Bug from '../entities/npcs/Bug';
 
@@ -120,7 +121,26 @@ class GameState {
     let tilex = 0;
     let tiley = 0;
 
-    // Map out the various blocks on the map with its data
+    /*
+    (Assuming I don't care about following graphical tile maps, and just use them for placement)
+    I guess by using neighbour aware tiles, will need to store the number on said area
+    in a similar way to what's being done already. Also, for things like destructible or coin tiles,
+    it'll need to generate in the same way (unless otherwise specified).
+    The map will have the number already generated. Ok so we're going to need a layering system I believe.
+
+    // If tile is equal to 1, it's a standard tile.
+    // If tile is equal to 2, it's a coin tile and it'll blow up after 'x' hits.
+    // etc, etc
+
+    To score, we simple do:
+    above: x - mapWidth
+    right: x + 1
+    below: x + mapWidth
+    left: x - 1
+
+    */
+
+    // First off, we have to place the areas in which tiles will exist (includes coin tile types)
     for (let x = 0; x < mapData.area; x += 1) {
 
       tilex += 1;
@@ -130,49 +150,101 @@ class GameState {
         tilex = 0;
       }
 
-      if (mapData.atIndex(x) === 1) {
+      //console.log((tiley - 1) * Math.abs(tilex - mapData.width));
+      //console.log((tiley) * Math.abs(tilex - mapData.width));
+      let above = 0; //mapData.atIndex( (tiley - 1) * tilex );
+      let below = 0; //mapData.atIndex( (tiley + 1) * tilex );
+      let right = mapData.atIndex( tiley * tilex );
+      let left = 0; // mapData.atIndex( tiley - (mapData.width * (tilex)) );
 
-        let groundBlock = EntityFactory.create({
-          type: 0,
-          game: this.game,
-          x: tilex * tileSize,
-          y: tiley * tileSize,
-          name: 'ground'
-        });
+      // tiley (row)
 
-        this.ground.add(groundBlock);
+      let n = MapHelpers.generateTileScore(above, right, below, left);
 
-      }
+      let t = document.createElement('div');
+      t.style.position = 'absolute';
+      t.style.left = tilex * tileSize + 'px';
+      t.style.top = tiley * tileSize + 'px';
+      t.style.width = tileSize + 'px';
+      t.style.height = tileSize + 'px';
+      t.style.border = '1px solid #ccc';
+      t.innerHTML = n;
 
-      if (mapData.atIndex(x) === 2) {
+      document.getElementById('container').appendChild(t);
 
-        let groundBlock = EntityFactory.create({
-          type: 1,
-          game: this.game,
-          x: tilex * tileSize,
-          y: tiley * tileSize,
-          name: 'ground'
-        });
+      console.log(n);
 
-        this.ground.add(groundBlock);
+      // We know there's a tile here (standard, not coin-type, will get to that),
+      // so we can map a score against it.
+      // if (mapData.atIndex(x) === 1) {
 
-      }
+      //   let groundBlock = EntityFactory.create({
+      //     type: 0,
+      //     game: this.game,
+      //     x: tilex * tileSize,
+      //     y: tiley * tileSize,
+      //     name: 'ground' // <- It's at this point you need to pick the right 'tile' to use.
+      //   });
 
-      if (mapData.atIndex(x) === 3) {
+      //   this.ground.add(groundBlock);
 
-        let healthPickup = EntityFactory.create({
-          type: 2,
-          game: this.game,
-          x: tilex * tileSize,
-          y: tiley * tileSize,
-          name: 'health'
-        });
-
-        this.pickups.add(healthPickup);
-
-      }
+      // }
 
     }
+
+    // Map out the various blocks on the map with its data
+    // for (let x = 0; x < mapData.area; x += 1) {
+
+    //   tilex += 1;
+
+    //   if (x % mapData.width === 0) {
+    //     tiley += 1;
+    //     tilex = 0;
+    //   }
+
+    //   if (mapData.atIndex(x) === 1) {
+
+    //     let groundBlock = EntityFactory.create({
+    //       type: 0,
+    //       game: this.game,
+    //       x: tilex * tileSize,
+    //       y: tiley * tileSize,
+    //       name: 'ground' // <- It's at this point you need to pick the right 'tile' to use.
+    //     });
+
+    //     this.ground.add(groundBlock);
+
+    //   }
+
+    //   if (mapData.atIndex(x) === 2) {
+
+    //     let groundBlock = EntityFactory.create({
+    //       type: 1,
+    //       game: this.game,
+    //       x: tilex * tileSize,
+    //       y: tiley * tileSize,
+    //       name: 'ground'
+    //     });
+
+    //     this.ground.add(groundBlock);
+
+    //   }
+
+    //   if (mapData.atIndex(x) === 3) {
+
+    //     let healthPickup = EntityFactory.create({
+    //       type: 2,
+    //       game: this.game,
+    //       x: tilex * tileSize,
+    //       y: tiley * tileSize,
+    //       name: 'health'
+    //     });
+
+    //     this.pickups.add(healthPickup);
+
+    //   }
+
+    // }
 
   }
 

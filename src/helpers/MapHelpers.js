@@ -1,6 +1,6 @@
 class MapHelpers {
 
-    static generateTileScore(u, d, l, r)
+    static generateTileScore(u, r, d, l)
     {
         let sum = 0;
         sum += u ? 1 : 0;

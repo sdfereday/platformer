@@ -29,7 +29,7 @@ class Bug extends mix(Phaser.Sprite).with(BehaviourManager) {
         let actionToTake = this.analyse(this.gambits, this.status, this.target);
 
         // When we have an action string, we know what state to push / activate.
-        console.log(actionToTake);
+        // ...
 
     }
 

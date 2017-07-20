@@ -4,7 +4,7 @@ class AIHelpers {
     {
         // To implement from:
         // https://gamemechanicexplorer.com/#raycasting-1
-        console.log(a, b);
+        // console.log(a, b);
         return true;
     }
 
