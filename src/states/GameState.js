@@ -120,6 +120,7 @@ class GameState {
 
     let tilex = 0;
     let tiley = 0;
+    let tilen = 0;
 
     /*
     (Assuming I don't care about following graphical tile maps, and just use them for placement)
@@ -143,6 +144,7 @@ class GameState {
     // First off, we have to place the areas in which tiles will exist (includes coin tile types)
     for (let x = 0; x < mapData.area; x += 1) {
 
+      // https://phaser.io/examples/v2/tilemaps/blank-tilemap
       tilex += 1;
 
       if (x % mapData.width === 0) {
@@ -150,17 +152,7 @@ class GameState {
         tilex = 0;
       }
 
-      //console.log((tiley - 1) * Math.abs(tilex - mapData.width));
-      //console.log((tiley) * Math.abs(tilex - mapData.width));
-      let above = 0; //mapData.atIndex( (tiley - 1) * tilex );
-      let below = 0; //mapData.atIndex( (tiley + 1) * tilex );
-      let right = mapData.atIndex( tiley * tilex );
-      let left = 0; // mapData.atIndex( tiley - (mapData.width * (tilex)) );
-
-      // tiley (row)
-
-      let n = MapHelpers.generateTileScore(above, right, below, left);
-
+      /// DEBUG
       let t = document.createElement('div');
       t.style.position = 'absolute';
       t.style.left = tilex * tileSize + 'px';
@@ -168,27 +160,47 @@ class GameState {
       t.style.width = tileSize + 'px';
       t.style.height = tileSize + 'px';
       t.style.border = '1px solid #ccc';
-      t.innerHTML = n;
+
+      // If the tile is actually occupied by a block, then we care about its neighbours, otherwise ignore.
+      // You technically use this to place decor on top of the tile also (if you're feeling brave)!
+      // You can also mix it up a bit with random tile picks of the same set, or of course, you could do away
+      // with auto-tiling altogether and give it a more manual feel.
+      if (mapData.atIndex(x) > 0) {
+
+        /// DEBUG
+        t.style.backgroundColor = "#333";
+
+        /* We find out current 'x' to map directly to tile in mapCache */
+        let above = mapData.atIndex(x - mapData.width);
+        let below = mapData.atIndex(x + mapData.width);
+        let right = mapData.atIndex(x + 1);
+        let left = mapData.atIndex(x - 1);
+
+        tilen = MapHelpers.generateTileScore(above, right, below, left);
+
+        t.innerHTML = tilen;
+
+        // We know there's a tile here (standard, not coin-type, will get to that),
+        // so we can map a score against it.
+        // if (mapData.atIndex(x) === 1) {
+
+        let groundBlock = EntityFactory.create({
+          type: 0,
+          game: this.game,
+          x: tilex * tileSize,
+          y: tiley * tileSize,
+          name: 'ground' // <- It's at this point you need to pick the right 'tile' to use.
+        });
+
+        this.ground.add(groundBlock);
+
+      } else {
+
+        tilen = 0;
+
+      }
 
       document.getElementById('container').appendChild(t);
-
-      console.log(n);
-
-      // We know there's a tile here (standard, not coin-type, will get to that),
-      // so we can map a score against it.
-      // if (mapData.atIndex(x) === 1) {
-
-      //   let groundBlock = EntityFactory.create({
-      //     type: 0,
-      //     game: this.game,
-      //     x: tilex * tileSize,
-      //     y: tiley * tileSize,
-      //     name: 'ground' // <- It's at this point you need to pick the right 'tile' to use.
-      //   });
-
-      //   this.ground.add(groundBlock);
-
-      // }
 
     }
 
