@@ -30,5 +30,6 @@ class MapMaker {
 
 }
 
-// Ensures singleton state (hopefully, need to figure it out)
-module.exports = new MapMaker();
+// Ensures singleton state (I think...)
+let mapMaker = mapMaker ? mapMaker : new MapMaker();
+module.exports = mapMaker;

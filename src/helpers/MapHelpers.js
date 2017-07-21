@@ -18,6 +18,7 @@ class MapHelpers {
 
         // https://phaser.io/examples/v2/tilemaps/create-from-array#download
         // Doesn't have to be CSV, you can quite happily use json probably.
+        // Feel free to change this so it picks n*2 of the number to pick a tile variant.
         for (let x = 0; x < mapData.area; x += 1) {
 
             // Generate tile scores based on neighbours

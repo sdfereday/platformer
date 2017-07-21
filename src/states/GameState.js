@@ -6,15 +6,6 @@ import MapHelpers from '../helpers/MapHelpers';
 import Player from '../entities/user/Player';
 import Bug from '../entities/npcs/Bug';
 
-// class BaseClass {
-//   // ...
-// }
-
-// // Some amazing class 
-// class MyCollection extends mix(BaseClass).with(/* ... */) {
-//   // I have access to both the prototypal method above, and the other 'useful' bits in the mixins <3
-// }
-
 /// https://gamemechanicexplorer.com/#platformer-6
 // At this point GameState doesn't really need to extend anything, it's more Sprites and things that should.
 class GameState {
@@ -90,19 +81,6 @@ class GameState {
     let levelMap = MapMaker.create(mapData, tileSize);
     this.generateMap(levelMap, tileSize);
 
-    // Place an enemy (will streamline more later)
-    let bugProps = this.game.cache.getJSON('enemies').find(x => x.id === 'bug').properties;
-    let bug = new Bug({
-      game: this.game,
-      x: (this.game.width / 2) + 64,
-      y: this.game.height - 128,
-      name: 'bug',
-      target: this.player,
-      properties: bugProps
-    });
-
-    this.enemies.add(bug);
-
     // Capture certain keys to prevent their default actions in the browser.
     // This is only necessary because this is an HTML5 game. Games on other
     // platforms may not need code like this.
@@ -123,6 +101,7 @@ class GameState {
     let tiley = 0;
     let tilen = 0;
 
+    //  Generates CSV data based on the raw map data supplied
     let mapCSV = MapHelpers.generateCSV(mapData);
 
     //  Add data to the cache
@@ -140,9 +119,13 @@ class GameState {
     //  0 is important
     this.levelLayer = this.levelTileMap.createLayer(0);
 
-    return;
-
-    // First off, we have to place the areas in which tiles will exist (includes coin tile types)
+    // Now that's all ready, you can look through the map data and place your sprite-based things. It's a 
+    // similar idea in that you're looking through the array for certain types. We totally ignore 'n === 1'
+    // since that's taken already be standard blocks. Enemies by the way are placed by a data map for this area,
+    // which will have a type and whatnot. I'd suggest putting this in the sandbox json underneath the main map.
+    // Of course, if I end up using tiled, they'll just be tile properties instead (which is likely where this
+    // thing will end up). I also may make is so all entities are in the listing, rather than just enemies. This
+    // may be more consistent.
     for (let x = 0; x < mapData.area; x += 1) {
 
       tilex += 1;
@@ -152,117 +135,66 @@ class GameState {
         tilex = 0;
       }
 
-      /// DEBUG
-      let t = document.createElement('div');
-      t.style.position = 'absolute';
-      t.style.left = tilex * tileSize + 'px';
-      t.style.top = tiley * tileSize + 'px';
-      t.style.width = tileSize + 'px';
-      t.style.height = tileSize + 'px';
-      t.style.border = '1px solid #ccc';
+      // TODO - convert to enums, perhaps get these from map entities data as opposed to array...
+      if (mapData.atIndex(x) === 2) {
 
-      // If the tile is actually occupied by a block, then we care about its neighbours, otherwise ignore.
-      // You technically use this to place decor on top of the tile also (if you're feeling brave)!
-      // You can also mix it up a bit with random tile picks of the same set, or of course, you could do away
-      // with auto-tiling altogether and give it a more manual feel.
-      if (mapData.atIndex(x) > 0) {
+        let healthPickup = EntityFactory.create({
+          type: 2,
+          game: this.game,
+          x: tilex * tileSize,
+          y: tiley * tileSize,
+          name: 'health'
+        });
 
-        /// DEBUG
-        t.style.backgroundColor = "#333";
-
-        /* We find out current 'x' to map directly to tile in mapCache */
-        let above = mapData.atIndex(x - mapData.width);
-        let below = mapData.atIndex(x + mapData.width);
-        let right = mapData.atIndex(x + 1);
-        let left = mapData.atIndex(x - 1);
-
-        tilen = MapHelpers.generateTileScore(above, right, below, left);
-        t.innerHTML = tilen;
-
-      } else {
-
-        tilen = 0;
+        this.pickups.add(healthPickup);
 
       }
 
-      document.getElementById('container').appendChild(t);
+      if (mapData.atIndex(x) === 3) {
+
+        let shieldPickup = EntityFactory.create({
+          type: 2,
+          game: this.game,
+          x: tilex * tileSize,
+          y: tiley * tileSize,
+          name: 'shield'
+        });
+
+        this.pickups.add(shieldPickup);
+
+      }
 
     }
 
-    // Map out the various blocks on the map with its data
-    // for (let x = 0; x < mapData.area; x += 1) {
+    // As mentioned above, place game entities (not including player)
+    // It may also be best to split the entity types for their job. Then you'll
+    // know what group you'll need.
+    for (let i = 0; i < mapData.enemies.length; i++) {
 
-    //   tilex += 1;
+      // Map the type of enemy to its definition data
+      let currentEntity = mapData.enemies[i];
+      let props = this.game.cache.getJSON('enemies').find(x => x.id === currentEntity.id).properties;
 
-    //   if (x % mapData.width === 0) {
-    //     tiley += 1;
-    //     tilex = 0;
-    //   }
+      // Double check you aren't placing on an occupied area
+      if(mapData.atIndex(currentEntity.x + currentEntity.y)) {
+        console.error("That tile is already taken.")
+        return;
+      }
 
-    //   if (mapData.atIndex(x) === 1) {
+      // Bake and serve!
+      this.enemies.add(EntityFactory.create({
+        game: this.game,
+        x: currentEntity.x * tileSize,
+        y: currentEntity.y * tileSize,
+        name: currentEntity.name,
+        target: this.player,
+        properties: props
+      }));
 
-    //     let groundBlock = EntityFactory.create({
-    //       type: 0,
-    //       game: this.game,
-    //       x: tilex * tileSize,
-    //       y: tiley * tileSize,
-    //       name: 'ground' // <- It's at this point you need to pick the right 'tile' to use.
-    //     });
-
-    //     this.ground.add(groundBlock);
-
-    //   }
-
-    //   if (mapData.atIndex(x) === 2) {
-
-    //     let groundBlock = EntityFactory.create({
-    //       type: 1,
-    //       game: this.game,
-    //       x: tilex * tileSize,
-    //       y: tiley * tileSize,
-    //       name: 'ground'
-    //     });
-
-    //     this.ground.add(groundBlock);
-
-    //   }
-
-    //   if (mapData.atIndex(x) === 3) {
-
-    //     let healthPickup = EntityFactory.create({
-    //       type: 2,
-    //       game: this.game,
-    //       x: tilex * tileSize,
-    //       y: tiley * tileSize,
-    //       name: 'health'
-    //     });
-
-    //     this.pickups.add(healthPickup);
-
-    //   }
-
-    // }
-
-  }
-
-  // This function draws horizontal lines across the stage
-  drawHeightMarkers() {
-    // Create a bitmap the same size as the stage
-    let bitmap = this.game.add.bitmapData(this.game.width, this.game.height);
-
-    // These functions use the canvas context to draw lines using the canvas API
-    for (let y = this.game.height - 20; y >= 0; y -= 32) {
-      bitmap.context.beginPath();
-      bitmap.context.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      bitmap.context.moveTo(0, y);
-      bitmap.context.lineTo(this.game.width, y);
-      bitmap.context.stroke();
     }
 
-    this.game.add.image(0, 0, bitmap);
   }
 
-  // The update() method is called every frame
   update() {
 
     // Collide layers and players
@@ -272,20 +204,12 @@ class GameState {
     // Collide the player with pickups
     this.game.physics.arcade.overlap(this.player, this.pickups, (a, b) => b.kill());
 
-    // Reset velocity counter (to avoid overrun)
-    //this.player.body.velocity.x = 0;
-
     if (this.leftInputIsActive()) {
-      // If the LEFT key is down, set the player velocity to move left
       this.player.body.acceleration.x = -this.ACCELERATION;
-      //this.player.body.velocity.x = -this.ACCELERATION;
     } else if (this.rightInputIsActive()) {
-      // If the RIGHT key is down, set the player velocity to move right
       this.player.body.acceleration.x = this.ACCELERATION;
-      //this.player.body.velocity.x = this.ACCELERATION;
     } else {
       this.player.body.acceleration.x = 0;
-      //this.player.body.velocity.x = 0;
     }
 
     // Set a variable that is true when the player is touching the ground
@@ -314,34 +238,42 @@ class GameState {
   // In this case, either holding the right arrow or tapping or clicking on the left
   // side of the screen.
   leftInputIsActive() {
-    let isActive = false;
-    isActive = this.input.keyboard.isDown(Phaser.Keyboard.LEFT);
-    return isActive;
+    return this.input.keyboard.isDown(Phaser.Keyboard.LEFT);
   }
 
   // This function should return true when the player activates the "go right" control
   // In this case, either holding the right arrow or tapping or clicking on the right
   // side of the screen.
   rightInputIsActive() {
-    let isActive = false;
-    isActive = this.input.keyboard.isDown(Phaser.Keyboard.RIGHT);
-    return isActive;
+    return this.input.keyboard.isDown(Phaser.Keyboard.RIGHT);
   }
 
   // This function should return true when the player activates the "jump" control
   // In this case, either holding the up arrow or tapping or clicking on the center
   // part of the screen.
   upInputIsActive(duration) {
-    let isActive = false;
-    isActive = this.input.keyboard.downDuration(Phaser.Keyboard.UP, duration);
-    return isActive;
+    return this.input.keyboard.downDuration(Phaser.Keyboard.UP, duration);
   }
 
   // This function returns true when the player releases the "jump" control
   upInputReleased() {
-    let released = false;
-    released = this.input.keyboard.upDuration(Phaser.Keyboard.UP);
-    return released;
+    return this.input.keyboard.upDuration(Phaser.Keyboard.UP);
+  }
+
+  drawHeightMarkers() {
+    // Create a bitmap the same size as the stage
+    let bitmap = this.game.add.bitmapData(this.game.width, this.game.height);
+
+    // These functions use the canvas context to draw lines using the canvas API
+    for (let y = this.game.height - 20; y >= 0; y -= 32) {
+      bitmap.context.beginPath();
+      bitmap.context.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      bitmap.context.moveTo(0, y);
+      bitmap.context.lineTo(this.game.width, y);
+      bitmap.context.stroke();
+    }
+
+    this.game.add.image(0, 0, bitmap);
   }
 
 }
