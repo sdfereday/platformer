@@ -38,6 +38,7 @@ class GameState {
     this.game.load.image('ground', levelConf.groundTile);
     this.game.load.image('player', './assets/gfx/player.png');
     this.game.load.image('bug', './assets/gfx/bug.png');
+    this.game.load.image('tiles', './assets/tilemaps/tiles/sci-fi-tiles.png');
 
     // The various amounts of game data used
     this.game.load.json('enemies', './assets/gamedata/enemies.json');
@@ -63,8 +64,8 @@ class GameState {
     // Create a player sprite
     this.player = new Player({
       game: this.game,
-      x: this.game.width / 2,
-      y: this.game.height - 64,
+      x: 64,
+      y: this.game.height - 128,
       name: 'player',
       MAX_SPEED: this.MAX_SPEED,
       DRAG: this.DRAG
@@ -87,14 +88,14 @@ class GameState {
 
     // Now we can generate the map
     let levelMap = MapMaker.create(mapData, tileSize);
-    this.placeEntities(levelMap, tileSize);
+    this.generateMap(levelMap, tileSize);
 
     // Place an enemy (will streamline more later)
     let bugProps = this.game.cache.getJSON('enemies').find(x => x.id === 'bug').properties;
     let bug = new Bug({
       game: this.game,
-      x: this.game.width / 2,
-      y: this.game.height - 64,
+      x: (this.game.width / 2) + 64,
+      y: this.game.height - 128,
       name: 'bug',
       target: this.player,
       properties: bugProps
@@ -116,35 +117,34 @@ class GameState {
     this.drawHeightMarkers();
   }
 
-  placeEntities(mapData, tileSize) {
+  generateMap(mapData, tileSize) {
 
     let tilex = 0;
     let tiley = 0;
     let tilen = 0;
 
-    /*
-    (Assuming I don't care about following graphical tile maps, and just use them for placement)
-    I guess by using neighbour aware tiles, will need to store the number on said area
-    in a similar way to what's being done already. Also, for things like destructible or coin tiles,
-    it'll need to generate in the same way (unless otherwise specified).
-    The map will have the number already generated. Ok so we're going to need a layering system I believe.
+    let mapCSV = MapHelpers.generateCSV(mapData);
 
-    // If tile is equal to 1, it's a standard tile.
-    // If tile is equal to 2, it's a coin tile and it'll blow up after 'x' hits.
-    // etc, etc
+    //  Add data to the cache
+    this.game.cache.addTilemap('dynamicMap', null, mapCSV, Phaser.Tilemap.CSV);
 
-    To score, we simple do:
-    above: x - mapWidth
-    right: x + 1
-    below: x + mapWidth
-    left: x - 1
+    //  Create our map (the 32x32 is the tile size)
+    this.levelTileMap = this.game.add.tilemap('dynamicMap', tileSize, tileSize);
 
-    */
+    //  'tiles' = cache image key, 32x32 = tile size
+    this.levelTileMap.addTilesetImage('tiles', 'tiles', tileSize, tileSize);
+
+    //  Enable collisions on all tiles on this layer
+    this.levelTileMap.setCollisionBetween(1, this.levelTileMap.tiles.length - 1);
+
+    //  0 is important
+    this.levelLayer = this.levelTileMap.createLayer(0);
+
+    return;
 
     // First off, we have to place the areas in which tiles will exist (includes coin tile types)
     for (let x = 0; x < mapData.area; x += 1) {
 
-      // https://phaser.io/examples/v2/tilemaps/blank-tilemap
       tilex += 1;
 
       if (x % mapData.width === 0) {
@@ -177,22 +177,7 @@ class GameState {
         let left = mapData.atIndex(x - 1);
 
         tilen = MapHelpers.generateTileScore(above, right, below, left);
-
         t.innerHTML = tilen;
-
-        // We know there's a tile here (standard, not coin-type, will get to that),
-        // so we can map a score against it.
-        // if (mapData.atIndex(x) === 1) {
-
-        let groundBlock = EntityFactory.create({
-          type: 0,
-          game: this.game,
-          x: tilex * tileSize,
-          y: tiley * tileSize,
-          name: 'ground' // <- It's at this point you need to pick the right 'tile' to use.
-        });
-
-        this.ground.add(groundBlock);
 
       } else {
 
@@ -281,8 +266,8 @@ class GameState {
   update() {
 
     // Collide layers and players
-    this.game.physics.arcade.collide(this.player, this.ground);
-    this.game.physics.arcade.collide(this.enemies, this.ground);
+    this.game.physics.arcade.collide(this.player, this.levelLayer);
+    this.game.physics.arcade.collide(this.enemies, this.levelLayer);
 
     // Collide the player with pickups
     this.game.physics.arcade.overlap(this.player, this.pickups, (a, b) => b.kill());
@@ -304,7 +289,7 @@ class GameState {
     }
 
     // Set a variable that is true when the player is touching the ground
-    let onTheGround = this.player.body.touching.down;
+    let onTheGround = this.player.body.blocked.down; // this.player.body.touching.down; - Only works on arcade physics bodies. Not tiles apparently...
 
     // If the player is touching the ground, let him have 2 jumps
     if (onTheGround) {
