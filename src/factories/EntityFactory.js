@@ -1,6 +1,7 @@
 import Block from '../entities/blocks/Block';
 import CoinBlock from '../entities/blocks/CoinBlock';
 import Pickup from '../entities/pickups/Pickup';
+import Bug from '../entities/npcs/Bug';
 
 class EntityFactory {
 
@@ -13,6 +14,8 @@ class EntityFactory {
                 return new CoinBlock(options);
             case 2:
                 return new Pickup(options);
+            case 3:
+                return new Bug(options);
         }
 
     }

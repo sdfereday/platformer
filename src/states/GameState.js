@@ -29,7 +29,7 @@ class GameState {
     this.game.load.image('ground', levelConf.groundTile);
     this.game.load.image('player', './assets/gfx/player.png');
     this.game.load.image('bug', './assets/gfx/bug.png');
-    this.game.load.image('tiles', './assets/tilemaps/tiles/sci-fi-tiles.png');
+    this.game.load.image('tiles', './assets/tilemaps/tiles/salt-tiles.png');
 
     // The various amounts of game data used
     this.game.load.json('enemies', './assets/gamedata/enemies.json');
@@ -43,20 +43,20 @@ class GameState {
   // Setup the example
   create() {
     // Set stage background to something sky colored
-    this.game.stage.backgroundColor = 0x4488cc;
+    this.game.stage.backgroundColor = 0x88BBcc;
 
     // Define movement constants
     this.MAX_SPEED = 250; // pixels/second
     this.ACCELERATION = 2500; // pixels/second/second
     this.DRAG = 1500; // pixels/second
-    this.GRAVITY = 2600; // pixels/second/second
+    this.GRAVITY = 2500; // pixels/second/second - note: anything above this causes you to fall through tiles... :/
     this.JUMP_SPEED = -500; // pixels/second (negative y is up)
 
     // Create a player sprite
     this.player = new Player({
       game: this.game,
-      x: 64,
-      y: this.game.height - 128,
+      x: 4 * 32,
+      y: 2 * 32,
       name: 'player',
       MAX_SPEED: this.MAX_SPEED,
       DRAG: this.DRAG
@@ -79,7 +79,7 @@ class GameState {
 
     // Now we can generate the map
     let levelMap = MapMaker.create(mapData, tileSize);
-    this.generateMap(levelMap, tileSize);
+    this.generateMap(levelMap, mapData, tileSize);
 
     // Capture certain keys to prevent their default actions in the browser.
     // This is only necessary because this is an HTML5 game. Games on other
@@ -95,14 +95,14 @@ class GameState {
     this.drawHeightMarkers();
   }
 
-  generateMap(mapData, tileSize) {
+  generateMap(generatedMapData, mapJSON, tileSize) {
 
     let tilex = 0;
     let tiley = 0;
     let tilen = 0;
 
     //  Generates CSV data based on the raw map data supplied
-    let mapCSV = MapHelpers.generateCSV(mapData);
+    let mapCSV = MapHelpers.generateCSV(generatedMapData);
 
     //  Add data to the cache
     this.game.cache.addTilemap('dynamicMap', null, mapCSV, Phaser.Tilemap.CSV);
@@ -114,7 +114,7 @@ class GameState {
     this.levelTileMap.addTilesetImage('tiles', 'tiles', tileSize, tileSize);
 
     //  Enable collisions on all tiles on this layer
-    this.levelTileMap.setCollisionBetween(1, this.levelTileMap.tiles.length - 1);
+    this.levelTileMap.setCollisionBetween(0, this.levelTileMap.tiles.length);
 
     //  0 is important
     this.levelLayer = this.levelTileMap.createLayer(0);
@@ -126,23 +126,23 @@ class GameState {
     // Of course, if I end up using tiled, they'll just be tile properties instead (which is likely where this
     // thing will end up). I also may make is so all entities are in the listing, rather than just enemies. This
     // may be more consistent.
-    for (let x = 0; x < mapData.area; x += 1) {
+    for (let x = 0; x < generatedMapData.area; x += 1) {
 
       tilex += 1;
 
-      if (x % mapData.width === 0) {
+      if (x % generatedMapData.width === 0) {
         tiley += 1;
         tilex = 0;
       }
 
       // TODO - convert to enums, perhaps get these from map entities data as opposed to array...
-      if (mapData.atIndex(x) === 2) {
+      if (generatedMapData.atIndex(x) === 2) {
 
         let healthPickup = EntityFactory.create({
           type: 2,
           game: this.game,
           x: tilex * tileSize,
-          y: tiley * tileSize,
+          y: (tiley - 1) * tileSize,
           name: 'health'
         });
 
@@ -150,13 +150,13 @@ class GameState {
 
       }
 
-      if (mapData.atIndex(x) === 3) {
+      if (generatedMapData.atIndex(x) === 3) {
 
         let shieldPickup = EntityFactory.create({
           type: 2,
           game: this.game,
           x: tilex * tileSize,
-          y: tiley * tileSize,
+          y: (tiley - 1) * tileSize,
           name: 'shield'
         });
 
@@ -169,27 +169,30 @@ class GameState {
     // As mentioned above, place game entities (not including player)
     // It may also be best to split the entity types for their job. Then you'll
     // know what group you'll need.
-    for (let i = 0; i < mapData.enemies.length; i++) {
+    for (let i = 0; i < mapJSON.enemies.length; i++) {
 
       // Map the type of enemy to its definition data
-      let currentEntity = mapData.enemies[i];
+      let currentEntity = mapJSON.enemies[i];
       let props = this.game.cache.getJSON('enemies').find(x => x.id === currentEntity.id).properties;
 
       // Double check you aren't placing on an occupied area
-      if(mapData.atIndex(currentEntity.x + currentEntity.y)) {
-        console.error("That tile is already taken.")
+      if(generatedMapData.atIndex(currentEntity.x + currentEntity.y)) {
+        console.error("That tile is already taken.");
         return;
       }
 
       // Bake and serve!
-      this.enemies.add(EntityFactory.create({
+      let ent = EntityFactory.create({
+        type: 3,
         game: this.game,
         x: currentEntity.x * tileSize,
         y: currentEntity.y * tileSize,
         name: currentEntity.name,
         target: this.player,
         properties: props
-      }));
+      });
+
+      this.enemies.add(ent);
 
     }
 

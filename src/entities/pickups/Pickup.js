@@ -12,7 +12,7 @@ class Pickup extends mix(Phaser.Sprite).with() {
         game.physics.enable(this, Phaser.Physics.ARCADE);
         this.body.immovable = true;
         this.body.allowGravity = false;
-        this.anchor.y = 0.5;
+        //this.anchor.y = 0.5;
 
         this.entityData = args.properties;
 

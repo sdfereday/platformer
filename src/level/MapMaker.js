@@ -22,7 +22,7 @@ class MapMaker {
     atIndex(i) {
 
         if(i < 0 || i > this.mapCache.length - 1)
-            return 0;
+            return null;
 
         return this.mapCache[i];
 
