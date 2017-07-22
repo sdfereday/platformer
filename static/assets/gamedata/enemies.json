@@ -34,6 +34,11 @@
                             "identifier": "has_los",
                             "operator": "boolean",
                             "value": false
+                        },
+                        {
+                            "identifier": "has_dist",
+                            "operator": "greater_than",
+                            "value": 250
                         }
                     ]
                 },
@@ -49,18 +54,14 @@
                             "identifier": "has_los",
                             "operator": "boolean",
                             "value": true
+                        },
+                        {
+                            "identifier": "has_dist",
+                            "operator": "less_than",
+                            "value": 250
                         }
                     ],
                     "actionIfTrue": "follow"
-                },
-                {
-                    "identifier": "hp_now",
-                    "against": "hp_max",
-                    "operator": "less_than",
-                    "percentile": true,
-                    "isDefault": false,
-                    "value": 0.5,
-                    "actionIfTrue": "escape"
                 }
             ]
         }

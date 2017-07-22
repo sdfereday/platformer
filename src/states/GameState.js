@@ -23,12 +23,14 @@ class GameState {
     let levelConf = {
       groundTile: './assets/gfx/ground.png',
       mapData: './assets/mapdata/sandbox.json'
-    }
+    };
 
     // Some media to play with
     this.game.load.image('ground', levelConf.groundTile);
     this.game.load.image('player', './assets/gfx/player.png');
     this.game.load.image('bug', './assets/gfx/bug.png');
+    this.game.load.image('life', './assets/gfx/oneup.png');
+    this.game.load.image('coin', './assets/gfx/coin.png');
     this.game.load.image('tiles', './assets/tilemaps/tiles/salt-tiles.png');
 
     // The various amounts of game data used
@@ -74,6 +76,7 @@ class GameState {
     this.pickups = this.game.add.group();
 
     // Retrieve the levels map data and set the tile scaling
+    this.game.physics.arcade.TILE_BIAS = 40; // Prevents strange tile fall-through
     let mapData = this.game.cache.getJSON('mapdata-sandbox');
     let tileSize = 32;
 
@@ -143,7 +146,7 @@ class GameState {
           game: this.game,
           x: tilex * tileSize,
           y: (tiley - 1) * tileSize,
-          name: 'health'
+          name: 'life'
         });
 
         this.pickups.add(healthPickup);
@@ -152,15 +155,15 @@ class GameState {
 
       if (generatedMapData.atIndex(x) === 3) {
 
-        let shieldPickup = EntityFactory.create({
+        let healthPickup = EntityFactory.create({
           type: 2,
           game: this.game,
           x: tilex * tileSize,
           y: (tiley - 1) * tileSize,
-          name: 'shield'
+          name: 'coin'
         });
 
-        this.pickups.add(shieldPickup);
+        this.pickups.add(healthPickup);
 
       }
 
@@ -187,9 +190,11 @@ class GameState {
         game: this.game,
         x: currentEntity.x * tileSize,
         y: currentEntity.y * tileSize,
-        name: currentEntity.name,
+        name: currentEntity.name.toLowerCase(),
         target: this.player,
-        properties: props
+        properties: props,
+        MAX_SPEED: this.MAX_SPEED,
+        DRAG: this.DRAG
       });
 
       this.enemies.add(ent);

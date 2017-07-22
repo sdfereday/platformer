@@ -19,7 +19,9 @@ let BehaviourManager = (superclass) => class extends superclass {
 
         // For each condition, run the stats against it.
         let status = data[condition.identifier];
-        let againstStatus = condition.against ? data[condition.against] : null;
+        // If against specific static value not specified, we just revert to the actual condition value (things like distance use this).
+        let againstStatus = condition.against ? data[condition.against] : condition.value;
+        // This needs to be true for this gambit to pass.
         let allTrue = false;
 
         // Some type checking would be useful here too.

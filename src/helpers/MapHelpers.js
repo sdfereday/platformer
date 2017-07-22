@@ -54,8 +54,6 @@ class MapHelpers {
 
         }
 
-        console.log(csvData);
-
         return csvData;
 
     }
