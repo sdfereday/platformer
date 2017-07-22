@@ -1,0 +1,10 @@
+{
+    "name": "Ralgar",
+    "properties": {
+        "hp_max": 2,
+        "hp_now": 2,
+        "lives": 3,
+        "continues": 0,
+        "score": 0
+    }
+}

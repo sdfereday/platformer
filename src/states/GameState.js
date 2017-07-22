@@ -34,6 +34,7 @@ class GameState {
     this.game.load.image('tiles', './assets/tilemaps/tiles/salt-tiles.png');
 
     // The various amounts of game data used
+    this.game.load.json('player', './assets/gamedata/playerData.json');
     this.game.load.json('enemies', './assets/gamedata/enemies.json');
     this.game.load.json('items', './assets/gamedata/items.json');
 
@@ -55,11 +56,13 @@ class GameState {
     this.JUMP_SPEED = -500; // pixels/second (negative y is up)
 
     // Create a player sprite
+    let props = this.game.cache.getJSON('player').properties;
     this.player = new Player({
       game: this.game,
       x: 4 * 32,
       y: 2 * 32,
       name: 'player',
+      properties: props,
       MAX_SPEED: this.MAX_SPEED,
       DRAG: this.DRAG
     });
@@ -210,7 +213,10 @@ class GameState {
     this.game.physics.arcade.collide(this.enemies, this.levelLayer);
 
     // Collide the player with pickups
-    this.game.physics.arcade.overlap(this.player, this.pickups, (a, b) => b.kill());
+    this.game.physics.arcade.overlap(this.player, this.pickups, function(a, b){
+      // a.modifyStat(b.boon());
+      b.kill();
+    });
 
     if (this.leftInputIsActive()) {
       this.player.body.acceleration.x = -this.ACCELERATION;
