@@ -26,3 +26,6 @@ https://www.npmjs.com/package/phaser
 
 You can also view the progress on Trello:
 https://trello.com/b/SkyrCjrm/platformer
+
+For tips on making 'fun' platformers, I used this guide:
+http://devmag.org.za/2011/01/18/11-tips-for-making-a-fun-platformer/
