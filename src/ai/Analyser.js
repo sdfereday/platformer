@@ -1,5 +1,5 @@
-let BehaviourManager = (superclass) => class extends superclass {
-
+let Analyser = (superclass) => class extends superclass {
+    
     // https://bitbucket.org/drunkenoodle/rpg-turn-based-proto/src/b98fbc1356938739acf0ef77b47502847f8d5652/src/data/definitions.js?at=master&fileviewer=file-view-default
     analyse(gambits, status, target) {
 
@@ -65,4 +65,4 @@ let BehaviourManager = (superclass) => class extends superclass {
 
 }
 
-module.exports = BehaviourManager;
+module.exports = Analyser;

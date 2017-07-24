@@ -1,10 +1,9 @@
 import mix from '../../helpers/Mixin';
 import AIHelpers from '../../helpers/AIHelpers';
-import BehaviourManager from '../../ai/BehaviourManager';
-import ChaseBehaviour from '../../ai/behaviours/Chase';
-import RoamBehaviour from '../../ai/behaviours/Roam';
+import Analyser from '../../ai/Analyser';
+import FSM from '../../ai/FSM';
 
-class Bug extends mix(Phaser.Sprite).with(BehaviourManager, ChaseBehaviour, RoamBehaviour) {
+class Bug extends mix(Phaser.Sprite).with(Analyser) {
 
     constructor(args) {
 
@@ -22,15 +21,9 @@ class Bug extends mix(Phaser.Sprite).with(BehaviourManager, ChaseBehaviour, Roam
         this.gambits = args.properties.gambits;
         this.target = args.target;
 
-        this.currentState = this.gambits.find(x => x.isDefault).actionIfTrue;
+        this.useState = this.gambits.find(x => x.isDefault).actionIfTrue;
 
-        // Temporary
-        this.pickedPos = {
-            x: this.x,
-            y: this.y
-        };
-
-        this.currentDir = "right";
+        this.fsm = new FSM();
 
     }
 
@@ -41,40 +34,23 @@ class Bug extends mix(Phaser.Sprite).with(BehaviourManager, ChaseBehaviour, Roam
         this.status.has_dist = AIHelpers.inDistance(this, this.target);
 
         // Then we feed in the world status and decide what to do with ourselves.
-        this.currentState = this.analyse(this.gambits, this.status, this.target);
+        this.useState = this.analyse(this.gambits, this.status, this.target);
 
         // When we have an action string, we know what state to push / activate.
-        /// Needs to use types, not strings
-        if (this.currentState === "roam")
-            this.roam();
-
-        if (this.currentState === "follow")
-            this.chase();
-
-    }
-
-    roam() {
-
-        let moving = this.moveTowards(this.pickedPos);
-
-        if (!moving)
-            this.pickedPos.x = this.getRandomInt(2 * 32, 15 * 32);
-
-    }
-
-    chase() {
-
-        let moving = this.moveTowards(this.pickedPos);
-
-        if (this.currentDir !== this.getTargetSide(this.target, this) || !moving) {
-            this.pickedPos.x = this.target.x;
+        /// Needs to use types, not strings, also, is this comparison a little slow?
+        /// Is it also a little slow to instantiate like this? Why not cache them? TODO.
+        /// Do we have the right way of calling the move function here?
+        if (this.useState === "roam" && !this.fsm.sameAsCurrent(this.useState)) {
+            this.fsm.pop();
+            this.fsm.push(new RoamBehaviour(this.status, this.moveTowards));
         }
 
-    }
+        if (this.useState === "follow" && !this.fsm.sameAsCurrent(this.useState)) {
+            this.fsm.pop();
+            this.fsm.push(new ChaseBehaviour(this.status, this.target, this.moveTowards));
+        }
 
-    getTargetSide(target, me) {
-
-        return target.x - me.x < 0 ? "left" : "right";
+        this.fsm.update(this.status);
 
     }
 
@@ -88,12 +64,12 @@ class Bug extends mix(Phaser.Sprite).with(BehaviourManager, ChaseBehaviour, Roam
                 x: pos.x - this.x
             };
 
-            let direction = diff.x < 0 ? "left" : "right";
-            this.currentDir = direction;
+            // Use enums for these magic strings, applies all over!
+            let direction = diff.x < 0 ? CONSTS.DIR.LEFT : CONSTS.DIR.RIGHT;
 
             if (Math.round(Math.abs(diff.x)) > 10) {
                 let spd = this.getRandomInt(80, 130);
-                this.body.velocity.x = direction === "left" ? -spd : spd;
+                this.body.velocity.x = direction === CONSTS.DIR.LEFT ? -spd : spd;
                 return true;
             } else {
                 this.body.velocity.x = 0;
@@ -104,19 +80,6 @@ class Bug extends mix(Phaser.Sprite).with(BehaviourManager, ChaseBehaviour, Roam
 
         return false;
 
-    }
-
-    dist(v1, v2) {
-
-        return Phaser.Math.distance(v1.x, v1.y, v2.x, v2.y);
-
-    }
-
-    getRandomInt(min, max) {
-        min = Math.ceil(min);
-        max = Math.floor(max);
-        return Math.floor(Math.random() * (max - min)) + min;
-        //The maximum is exclusive and the minimum is inclusive
     }
 
 }
