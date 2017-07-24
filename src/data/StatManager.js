@@ -2,20 +2,21 @@ let StatManager = (superclass) => class extends superclass {
 
     populateStats(obj) {
 
-        if (!this.stats)
-            this.stats = [];
+        let stats = [];
 
         for (let k in obj) {
-            this.stats.push({
+            stats.push({
                 "id": k,
                 "v": obj[k]
             })
         }
 
+        return stats;
+
     }
 
-    modifyStat(id, n) {
-        this.stats.find(x => x.id === id).v = n;
+    modifyStat(id, n, stats) {
+        stats.find(x => x.id === id).v = n;
     }
 
 };

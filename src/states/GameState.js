@@ -220,10 +220,9 @@ class GameState {
     this.game.physics.arcade.collide(this.player, this.levelLayer);
     this.game.physics.arcade.collide(this.enemies, this.levelLayer);
 
-    // Collide the player with pickups
+    // Collide the player with pickups - modify based on pickup stat
     this.game.physics.arcade.overlap(this.player, this.pickups, function(a, b){
-      console.log(b.id, b.value);
-      a.modifyStat(b.id, b.value);
+      a.onPickup(b.id, b.value);
       b.kill();
     });
 
