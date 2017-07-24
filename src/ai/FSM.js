@@ -9,7 +9,7 @@ class FSM {
 
     update(params) {
 
-        this.top.update(params);
+        this.top().update(params);
 
     }
 
