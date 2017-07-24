@@ -15,10 +15,10 @@ class FSM {
 
     push(state, params) {
 
-        this.stack.push(state);
-
-        if (this.stack.find(x => x.name === state.name))
+        if (this.stack.find(x => x.id === state.id))
             throw " - State duplication error, check you aren't pushing the same type.";
+
+        this.stack.push(state);
 
         this.top().enter(params);
 
@@ -36,7 +36,7 @@ class FSM {
         if (this.top().locked)
             return;
 
-        let removed = this.stack.splice(this.stack.length - 1, 1);
+        let removed = this.stack.splice(this.stack.length - 1, 1)[0];
         removed.exit();
 
         // GC (wouldn't have to do this if they were cached instead)
@@ -54,7 +54,7 @@ class FSM {
     }
 
     sameAsCurrent(id) {
-        return this.top().id !== id;
+        return this.top().id === id;
     }
 
 }

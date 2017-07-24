@@ -1,7 +1,12 @@
+import TYPES from '../../GameTypes';
 import mix from '../../helpers/Mixin';
 import AIHelpers from '../../helpers/AIHelpers';
+import PositionHelpers from '../../helpers/PositionHelpers';
+import MathHelpers from '../../helpers/MathHelpers';
 import Analyser from '../../ai/Analyser';
 import FSM from '../../ai/FSM';
+import ChaseBehaviour from '../../ai/behaviours/Chase';
+import RoamBehaviour from '../../ai/behaviours/Roam';
 
 class Bug extends mix(Phaser.Sprite).with(Analyser) {
 
@@ -42,12 +47,12 @@ class Bug extends mix(Phaser.Sprite).with(Analyser) {
         /// Do we have the right way of calling the move function here?
         if (this.useState === "roam" && !this.fsm.sameAsCurrent(this.useState)) {
             this.fsm.pop();
-            this.fsm.push(new RoamBehaviour(this.status, this.moveTowards));
+            this.fsm.push(new RoamBehaviour(this, this.status, this.moveTowards));
         }
 
         if (this.useState === "follow" && !this.fsm.sameAsCurrent(this.useState)) {
             this.fsm.pop();
-            this.fsm.push(new ChaseBehaviour(this.status, this.target, this.moveTowards));
+            this.fsm.push(new ChaseBehaviour(this, this.status, this.target, this.moveTowards));
         }
 
         this.fsm.update(this.status);
@@ -58,18 +63,20 @@ class Bug extends mix(Phaser.Sprite).with(Analyser) {
 
         this.body.velocity.x = 0;
 
-        if (this.dist(pos, { x: this.x, y: this.y }) > 2) {
+        console.log("POS", pos);
+
+        if (PositionHelpers.dist(pos, { x: this.x, y: this.y }) > 2) {
 
             let diff = {
                 x: pos.x - this.x
             };
 
             // Use enums for these magic strings, applies all over!
-            let direction = diff.x < 0 ? CONSTS.DIR.LEFT : CONSTS.DIR.RIGHT;
+            let direction = diff.x < 0 ? TYPES.DIR.LEFT : TYPES.DIR.RIGHT;
 
             if (Math.round(Math.abs(diff.x)) > 10) {
-                let spd = this.getRandomInt(80, 130);
-                this.body.velocity.x = direction === CONSTS.DIR.LEFT ? -spd : spd;
+                let spd = MathHelpers.getRandomInt(80, 130);
+                this.body.velocity.x = direction === TYPES.DIR.LEFT ? -spd : spd;
                 return true;
             } else {
                 this.body.velocity.x = 0;

@@ -3,12 +3,13 @@ import MathHelpers from '../../helpers/MathHelpers';
 
 class Roam extends StateBase {
 
-    constructor(status, moveCallback) {
+    constructor(owner, status, moveCallback) {
 
         super();
 
         this.id = "roam";
         this.status = status;
+        this.owner = owner;
 
         this.moveCallback = moveCallback;
         this.pickedPos = {
@@ -20,10 +21,12 @@ class Roam extends StateBase {
 
     update() {
 
-        let moving = this.moveCallback(this.pickedPos);
+        let moving = this.moveCallback.call(this.owner, this.pickedPos);
 
-        if (!moving)
+        if (!moving) {
             this.pickedPos.x = MathHelpers.getRandomInt(2 * 32, 15 * 32);
+            this.pickedPos.y = this.y;
+        }
 
     }
 

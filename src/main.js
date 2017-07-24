@@ -3,14 +3,6 @@ import 'p2';
 import Phaser from 'phaser';
 import GameState from './states/GameState';
 
-// Pop enums here for clarity
-const CONSTS = {
-  DIR: {
-    LEFT: 0,
-    RIGHT: 1
-  }
-}
-
 // https://github.com/belohlavek/phaser-es6-boilerplate
 // We extend Phaser.Game to avoid contextual issues when attaching to the lib.
 class Game extends Phaser.Game {
