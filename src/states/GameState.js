@@ -149,7 +149,11 @@ class GameState {
           game: this.game,
           x: tilex * tileSize,
           y: (tiley - 1) * tileSize,
-          name: 'life'
+          name: 'life',
+          modifier: {
+            "id": "hp_now",
+            "value": 1
+          }
         });
 
         this.pickups.add(healthPickup);
@@ -163,7 +167,11 @@ class GameState {
           game: this.game,
           x: tilex * tileSize,
           y: (tiley - 1) * tileSize,
-          name: 'coin'
+          name: 'coin',
+          modifier: {
+            "id": "score",
+            "value": 250
+          }
         });
 
         this.pickups.add(healthPickup);
@@ -214,7 +222,8 @@ class GameState {
 
     // Collide the player with pickups
     this.game.physics.arcade.overlap(this.player, this.pickups, function(a, b){
-      // a.modifyStat(b.boon());
+      console.log(b.id, b.value);
+      a.modifyStat(b.id, b.value);
       b.kill();
     });
 

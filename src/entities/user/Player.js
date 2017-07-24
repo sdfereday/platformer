@@ -1,4 +1,7 @@
-class Player extends Phaser.Sprite {
+import mix from '../../helpers/Mixin';
+import StatManager from '../../data/StatManager';
+
+class Player extends mix(Phaser.Sprite).with(StatManager) {
 
     constructor(args) {
 
@@ -12,7 +15,11 @@ class Player extends Phaser.Sprite {
         this.body.maxVelocity.setTo(args.MAX_SPEED, args.MAX_SPEED * 10);
         this.body.drag.setTo(args.DRAG, 0);
 
-        this.entityData = args.properties;
+        this.populateStats({
+            "hp_max": args.properties.hp_max,
+            "hp_now": args.properties.hp_now,
+            "score": args.properties.score
+        });
 
     }
 
