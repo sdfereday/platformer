@@ -27,8 +27,8 @@ class Chase extends StateBase {
 
         let moving = this.moveCallback.call(this.owner, this.pickedPos);
 
-        if (this.currentDir !== PositionHelpers.getTargetSide(this.target, this) || !moving) {
-            this.currentDir = PositionHelpers.getTargetSide(this.target, this);
+        if (this.currentDir !== PositionHelpers.getTargetSide(this.target, this.owner) || !moving) {
+            this.currentDir = PositionHelpers.getTargetSide(this.target, this.owner);
             this.pickedPos.x = this.target.x;
         }
 

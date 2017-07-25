@@ -6,6 +6,10 @@
         },
         "properties": {
             "isBoss": false,
+            "physics": {
+                "MAX_SPEED": 200,
+                "DRAG": 200
+            },
             "status": {
                 "has_los": false,
                 "hp_max": 2,
@@ -23,24 +27,31 @@
             "gambits": [
                 {
                     "identifier": "hp_now",
-                    "against": "hp_max",
                     "operator": "greater_than",
-                    "percentile": true,
                     "isDefault": true,
-                    "value": 0.5,
-                    "actionIfTrue": "roam",
+                    "value": 0,
                     "and": [
                         {
-                            "identifier": "has_los",
-                            "operator": "boolean",
-                            "value": false
-                        },
+                            "identifier": "has_dist",
+                            "operator": "less_than",
+                            "value": 10
+                        }
+                    ],
+                    "actionIfTrue": "idle"
+                },
+                {
+                    "identifier": "hp_now",
+                    "operator": "greater_than",
+                    "isDefault": false,
+                    "value": 0,
+                    "and": [
                         {
                             "identifier": "has_dist",
                             "operator": "greater_than",
                             "value": 250
                         }
-                    ]
+                    ],
+                    "actionIfTrue": "roam"
                 },
                 {
                     "identifier": "hp_now",
@@ -48,7 +59,7 @@
                     "operator": "greater_than",
                     "percentile": true,
                     "isDefault": false,
-                    "value": 0.5,
+                    "value": 0.2,
                     "and": [
                         {
                             "identifier": "has_los",
@@ -58,10 +69,10 @@
                         {
                             "identifier": "has_dist",
                             "operator": "less_than",
-                            "value": 250
+                            "value": 150
                         }
                     ],
-                    "actionIfTrue": "follow"
+                    "actionIfTrue": "chase"
                 }
             ]
         }

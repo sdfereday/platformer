@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Plato - src\states\GameState.js</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <link href="../../assets/css/vendor/morris.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/bootstrap.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/font-awesome.css" rel="stylesheet">
+  <link href="../../assets/css/vendor/codemirror.css" rel="stylesheet">
+  <link href="../../assets/css/plato.css" rel="stylesheet">
+  <link href="../../assets/css/plato-file.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="http://github.com/es-analysis/plato">Plato on Github</a>
+    <ul class="nav navbar-nav">
+      <li>
+        <a href="../../index.html">Report Home</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div class="jumbotron">
+  <div class="container">
+    <h1>src\states\GameState.js</h1>
+  </div>
+</div>
+
+<div class="container aggregate-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Maintainability <a href="http://blogs.msdn.com/b/codeanalysis/archive/2007/11/20/maintainability-index-range-and-meaning.aspx"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="A value between 0 and 100 that represents the relative ease of maintaining the code. A high value means better maintainability." data-original-title="Maintainability Index"  data-container="body"></i></a></h2>
+      <p class="stat">62.79</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Lines of code <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h2>
+      <p class="stat">256</p>
+    </div>
+  </div>
+  <div class="row historical">
+    <div class="col-md-6">
+      <p id="chart_historical_maint" class="chart"></p>
+    </div>
+    <div class="col-md-6">
+      <p id="chart_historical_sloc" class="chart"></p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="header">Difficulty  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="The difficulty measure is related to the difficulty of the program to write or understand." data-original-title="Difficulty" data-container="body"></i></a></h2>
+      <p class="stat">51.04</p>
+    </div>
+    <div class="col-md-6">
+      <h2 class="header">Estimated Errors  <a href="http://en.wikipedia.org/wiki/Halstead_complexity_measures"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Halstead's delivered bugs is an estimate for the number of errors in the implementation." data-original-title="Delivered Bugs" data-container="body"></i></a></h2>
+      <p class="stat">2.60</p>
+    </div>
+  </div>
+</div>
+
+<div class="container charts">
+  <div class="row">
+    <h2 class="header">Function weight</h2>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3 class="chart-header">By Complexity <a href="http://en.wikipedia.org/wiki/Cyclomatic_complexity"><i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="This metric counts the number of distinct paths through a block of code. Lower values are better." data-original-title="Cyclomatic Complexity" data-container="body"></i></a></h3>
+      <div id="fn-by-complexity" class="stat"></div>
+    </div>
+    <div class="col-md-6">
+      <h3 class="chart-header">By SLOC  <i class="icon icon-info-sign" rel="popover" data-placement="top" data-trigger="hover" data-content="Source Lines of Code / Logical Lines of Code" data-original-title="SLOC/LSLOC" data-container="body"></i></h3>
+      <div id="fn-by-sloc" class="stat"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <textarea id="file-source" class="col-md-12">import TYPES from &#039;../GameTypes&#039;;
+import mix from &#039;../helpers/Mixin&#039;;
+import Phaser from &#039;phaser&#039;;
+import MapMaker from &#039;../level/MapMaker&#039;;
+import MapHelpers from &#039;../helpers/MapHelpers&#039;;
+import ItemFactory from &#039;../factories/ItemFactory&#039;;
+import CreatureFactory from &#039;../factories/CreatureFactory&#039;;
+import BlockFactory from &#039;../factories/BlockFactory&#039;;
+import Player from &#039;../entities/user/Player&#039;;
+
+/// https://gamemechanicexplorer.com/#platformer-6
+// At this point GameState doesn&#039;t really need to extend anything, it&#039;s more Sprites and things that should.
+class GameState {
+
+  constructor(game) {
+    // ... If it isn&#039;t already...
+    this.game = game;
+  }
+
+  // Prototypal methods
+  // Load images and sounds
+  preload() {
+
+    // Differs per level
+    let levelConf = {
+      groundTile: &#039;./assets/gfx/ground.png&#039;,
+      mapData: &#039;./assets/mapdata/sandbox.json&#039;
+    };
+
+    // Some media to play with
+    this.game.load.image(&#039;ground&#039;, levelConf.groundTile);
+    this.game.load.image(&#039;player&#039;, &#039;./assets/gfx/player.png&#039;);
+    this.game.load.image(&#039;bug&#039;, &#039;./assets/gfx/bug.png&#039;);
+    this.game.load.image(&#039;life&#039;, &#039;./assets/gfx/oneup.png&#039;);
+    this.game.load.image(&#039;coin&#039;, &#039;./assets/gfx/coin.png&#039;);
+    this.game.load.image(&#039;tiles&#039;, &#039;./assets/tilemaps/tiles/salt-tiles.png&#039;);
+
+    // The various amounts of game data used
+    this.game.load.json(&#039;player&#039;, &#039;./assets/gamedata/playerData.json&#039;);
+    this.game.load.json(&#039;enemies&#039;, &#039;./assets/gamedata/enemies.json&#039;);
+    this.game.load.json(&#039;items&#039;, &#039;./assets/gamedata/items.json&#039;);
+
+    // Map data (sandbox is all we have right now)
+    this.game.load.json(&#039;mapdata-sandbox&#039;, levelConf.mapData);
+
+  }
+
+  // Setup the example
+  create() {
+    // Set stage background to something sky colored
+    this.game.stage.backgroundColor = 0x88BBcc;
+
+    // Define movement constants
+    this.MAX_SPEED = 250; // pixels/second
+    this.ACCELERATION = 2500; // pixels/second/second
+    this.DRAG = 1500; // pixels/second
+    this.GRAVITY = 2500; // pixels/second/second - note: anything above this causes you to fall through tiles... :/
+    this.JUMP_SPEED = -500; // pixels/second (negative y is up)
+
+    // Create a player sprite
+    let props = this.game.cache.getJSON(&#039;player&#039;).properties;
+    this.player = new Player({
+      game: this.game,
+      x: 4 * 32,
+      y: 2 * 32,
+      name: &#039;player&#039;,
+      properties: props,
+      MAX_SPEED: this.MAX_SPEED,
+      DRAG: this.DRAG
+    });
+
+    // Since we&#039;re jumping we need gravity
+    this.game.physics.arcade.gravity.y = this.GRAVITY;
+
+    // Flag to track if the jump button is pressed
+    this.jumping = false;
+
+    // Create some groups to house the tiles / items, etc
+    this.ground = this.game.add.group();
+    this.enemies = this.game.add.group();
+    this.items = this.game.add.group();
+
+    // Retrieve the levels map data and set the tile scaling
+    this.game.physics.arcade.TILE_BIAS = 40; // Prevents strange tile fall-through
+    let mapData = this.game.cache.getJSON(&#039;mapdata-sandbox&#039;);
+    let tileSize = 32;
+
+    // Now we can generate the map
+    let levelMap = MapMaker.create(mapData, tileSize);
+    this.generateMap(levelMap, mapData, tileSize);
+
+    // Capture certain keys to prevent their default actions in the browser.
+    // This is only necessary because this is an HTML5 game. Games on other
+    // platforms may not need code like this.
+    this.game.input.keyboard.addKeyCapture([
+      Phaser.Keyboard.LEFT,
+      Phaser.Keyboard.RIGHT,
+      Phaser.Keyboard.UP,
+      Phaser.Keyboard.DOWN
+    ]);
+
+    // Just for fun, draw some height markers so we can see how high we&#039;re jumping
+    this.drawHeightMarkers();
+  }
+
+  generateMap(generatedMapData, mapJSON, tileSize) {
+
+    let tilex = 0;
+    let tiley = 0;
+    let tilen = 0;
+
+    //  Generates CSV data based on the raw map data supplied
+    let mapCSV = MapHelpers.generateCSV(generatedMapData);
+
+    //  Add data to the cache
+    this.game.cache.addTilemap(&#039;dynamicMap&#039;, null, mapCSV, Phaser.Tilemap.CSV);
+
+    //  Create our map (the 32x32 is the tile size)
+    this.levelTileMap = this.game.add.tilemap(&#039;dynamicMap&#039;, tileSize, tileSize);
+
+    //  &#039;tiles&#039; = cache image key, 32x32 = tile size
+    this.levelTileMap.addTilesetImage(&#039;tiles&#039;, &#039;tiles&#039;, tileSize, tileSize);
+
+    //  Enable collisions on all tiles on this layer
+    this.levelTileMap.setCollisionBetween(0, this.levelTileMap.tiles.length);
+
+    //  0 is important
+    this.levelLayer = this.levelTileMap.createLayer(0);
+
+    /// .............. Items
+    for (let i = 0; i &lt; mapJSON.items.length; i++) {
+
+      let currentEntity = mapJSON.items[i];
+      let props = this.game.cache.getJSON(&#039;items&#039;).find(x =&gt; x.id === currentEntity.id).properties;
+
+      let ent = ItemFactory.create({
+        game: this.game,
+        x: currentEntity.x * tileSize,
+        y: currentEntity.y * tileSize,
+        name: currentEntity.name.toLowerCase(),
+        properties: props
+      });
+
+      this.items.add(ent);
+
+    }
+
+    /// .............. Enemies
+    for (let i = 0; i &lt; mapJSON.enemies.length; i++) {
+
+      let currentEntity = mapJSON.enemies[i];
+      let props = this.game.cache.getJSON(&#039;enemies&#039;).find(x =&gt; x.id === currentEntity.id).properties;
+
+      let ent = EntityFactory.create({
+        game: this.game,
+        x: currentEntity.x * tileSize,
+        y: currentEntity.y * tileSize,
+        id: currentEntity.id,
+        name: currentEntity.name.toLowerCase(),
+        target: this.player,
+        properties: props
+      });
+
+      this.enemies.add(ent);
+
+    }
+
+  }
+
+  update() {
+
+    // Collide layers and players
+    this.game.physics.arcade.collide(this.player, this.levelLayer);
+    this.game.physics.arcade.collide(this.enemies, this.levelLayer);
+
+    // Collide the player with items - modify based on pickup stat
+    this.game.physics.arcade.overlap(this.player, this.items, function (a, b) {
+      a.onPickup(b.modify.id, b.modify.value);
+      b.kill();
+    });
+
+    if (this.leftInputIsActive()) {
+      this.player.body.acceleration.x = -this.ACCELERATION;
+    } else if (this.rightInputIsActive()) {
+      this.player.body.acceleration.x = this.ACCELERATION;
+    } else {
+      this.player.body.acceleration.x = 0;
+    }
+
+    // Set a variable that is true when the player is touching the ground
+    let onTheGround = this.player.body.blocked.down; // this.player.body.touching.down; - Only works on arcade physics bodies. Not tiles apparently...
+
+    // If the player is touching the ground, let him have 2 jumps
+    if (onTheGround) {
+      this.jumps = 2;
+      this.jumping = false;
+    }
+
+    // Jump! Keep y velocity constant while the jump button is held for up to 150 ms
+    if (this.jumps &gt; 0 &amp;&amp; this.upInputIsActive(150)) {
+      this.player.body.velocity.y = this.JUMP_SPEED;
+      this.jumping = true;
+    }
+
+    // Reduce the number of available jumps if the jump input is released
+    if (this.jumping &amp;&amp; this.upInputReleased()) {
+      this.jumps--;
+      this.jumping = false;
+    }
+  }
+
+  // This function should return true when the player activates the &quot;go left&quot; control
+  // In this case, either holding the right arrow or tapping or clicking on the left
+  // side of the screen.
+  leftInputIsActive() {
+    return this.input.keyboard.isDown(Phaser.Keyboard.LEFT);
+  }
+
+  // This function should return true when the player activates the &quot;go right&quot; control
+  // In this case, either holding the right arrow or tapping or clicking on the right
+  // side of the screen.
+  rightInputIsActive() {
+    return this.input.keyboard.isDown(Phaser.Keyboard.RIGHT);
+  }
+
+  // This function should return true when the player activates the &quot;jump&quot; control
+  // In this case, either holding the up arrow or tapping or clicking on the center
+  // part of the screen.
+  upInputIsActive(duration) {
+    return this.input.keyboard.downDuration(Phaser.Keyboard.UP, duration);
+  }
+
+  // This function returns true when the player releases the &quot;jump&quot; control
+  upInputReleased() {
+    return this.input.keyboard.upDuration(Phaser.Keyboard.UP);
+  }
+
+  drawHeightMarkers() {
+    // Create a bitmap the same size as the stage
+    let bitmap = this.game.add.bitmapData(this.game.width, this.game.height);
+
+    // These functions use the canvas context to draw lines using the canvas API
+    for (let y = this.game.height - 20; y &gt;= 0; y -= 32) {
+      bitmap.context.beginPath();
+      bitmap.context.strokeStyle = &#039;rgba(255, 255, 255, 0.2)&#039;;
+      bitmap.context.moveTo(0, y);
+      bitmap.context.lineTo(this.game.width, y);
+      bitmap.context.stroke();
+    }
+
+    this.game.add.image(0, 0, bitmap);
+  }
+
+}
+
+export default GameState;</textarea>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <p>.</p>
+  </div>
+</footer>
+
+<script type="text/html" id="complexity-popover-template">
+  <div class="complexity-notice">
+    Complexity : {{ cyclomatic }} <br>
+    Length : {{ halstead.length }} <br>
+    Difficulty : {{ halstead.difficulty.toFixed(2) }} <br>
+    Est # bugs : {{ halstead.bugs.toFixed(2) }}<br>
+  </div>
+</script>
+
+<script type="text/javascript" src="../../assets/scripts/bundles/core-bundle.js"></script>
+<script type="text/javascript" src="../../assets/scripts/bundles/codemirror.js"></script>
+<script type="text/javascript" src="../../assets/scripts/codemirror.markpopovertext.js"></script>
+<script type="text/javascript" src="report.js"></script>
+<script type="text/javascript" src="report.history.js"></script>
+<script type="text/javascript" src="../../assets/scripts/plato-file.js"></script>
+</body>
+</html>

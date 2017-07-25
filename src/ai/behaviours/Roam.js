@@ -13,8 +13,8 @@ class Roam extends StateBase {
 
         this.moveCallback = moveCallback;
         this.pickedPos = {
-            x: this.x,
-            y: this.y
+            x: this.owner.x,
+            y: this.owner.y
         };
 
     }
@@ -25,7 +25,7 @@ class Roam extends StateBase {
 
         if (!moving) {
             this.pickedPos.x = MathHelpers.getRandomInt(2 * 32, 15 * 32);
-            this.pickedPos.y = this.y;
+            this.pickedPos.y = this.pickedPos.y;
         }
 
     }

@@ -48,7 +48,7 @@ class FSM {
 
         this.stack = this.stack.filter(x => x.locked);
 
-        if (this.stack.length > 0)
+        if (this.stack.length > 1)
             throw " - Can only have one locked state.";
 
     }

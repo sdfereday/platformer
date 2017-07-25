@@ -1,3 +1,5 @@
+import TYPES from '../GameTypes';
+
 class PositionHelpers {
 
     static dist(v1, v2) {
@@ -8,7 +10,7 @@ class PositionHelpers {
 
     static getTargetSide(target, me) {
 
-        return target.x - me.x < 0 ? "left" : "right";
+        return target.x - me.x < 0 ? TYPES.DIR.LEFT : TYPES.DIR.RIGHT;
 
     }
 

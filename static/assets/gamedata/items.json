@@ -1,8 +1,11 @@
 [
     {
-        "type": 0,
-        "stat": "health",
-        "value": 1,
+        "id": "health",
+        "type": "pickup",
+        "modify": {
+            "id": "hp_now",
+            "value": 1
+        },
         "meta": {
             "name": "Heart"
         }

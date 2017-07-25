@@ -1,6 +1,6 @@
 const TYPES = {
   DIR: {
-    LEFT: 0,
+    LEFT: -1,
     RIGHT: 1
   }
 };
