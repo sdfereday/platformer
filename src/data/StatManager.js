@@ -16,7 +16,8 @@ let StatManager = (superclass) => class extends superclass {
     }
 
     modifyStat(id, n, stats) {
-        stats.find(x => x.id === id).v = n;
+        stats.find(x => x.id === id).v += n;
+        console.log(id, n, stats);
     }
 
 };

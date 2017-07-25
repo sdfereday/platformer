@@ -151,7 +151,7 @@ class GameState {
       let currentEntity = mapJSON.enemies[i];
       let props = this.game.cache.getJSON('enemies').find(x => x.id === currentEntity.id).properties;
 
-      let ent = EntityFactory.create({
+      let ent = CreatureFactory.create({
         game: this.game,
         x: currentEntity.x * tileSize,
         y: currentEntity.y * tileSize,
@@ -175,7 +175,7 @@ class GameState {
 
     // Collide the player with items - modify based on pickup stat
     this.game.physics.arcade.overlap(this.player, this.items, function (a, b) {
-      a.onPickup(b.modify.id, b.modify.value);
+      a.onPickup(b.itemData.id, b.itemData.value);
       b.kill();
     });
 

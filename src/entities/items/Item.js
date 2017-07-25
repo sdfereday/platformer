@@ -13,8 +13,10 @@ class Pickup extends mix(Phaser.Sprite).with() {
         this.body.immovable = true;
         this.body.allowGravity = false;
 
-        this.id = args.modifier.id;
-        this.value = args.modifier.value;
+        this.itemData = {
+            id: args.properties.id,
+            value: args.properties.value
+        };
 
     }
 

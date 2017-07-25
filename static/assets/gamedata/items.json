@@ -2,7 +2,7 @@
     {
         "id": "health",
         "type": "pickup",
-        "modify": {
+        "properties": {
             "id": "hp_now",
             "value": 1
         },
