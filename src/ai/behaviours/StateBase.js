@@ -22,4 +22,4 @@ class StateBase {
 
 }
 
-module.exports = StateBase;
+export default StateBase;

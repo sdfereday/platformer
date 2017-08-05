@@ -8,4 +8,4 @@ class ItemFactory {
 
 }
 
-module.exports = ItemFactory;
+export default ItemFactory;

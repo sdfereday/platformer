@@ -60,4 +60,4 @@ class MapHelpers {
 
 }
 
-module.exports = MapHelpers;
+export default MapHelpers;

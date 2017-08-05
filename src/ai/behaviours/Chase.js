@@ -36,4 +36,4 @@ class Chase extends StateBase {
 
 };
 
-module.exports = Chase;
+export default Chase;

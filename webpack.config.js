@@ -9,15 +9,19 @@ let p2 = path.join(phaserModule, 'build/custom/p2.js');
 
 // https://github.com/lean/phaser-es6-webpack
 let definePlugin = new webpack.DefinePlugin({
+    'global': {},
     __DEV__: JSON.stringify(JSON.parse(process.env.BUILD_DEV || 'false'))
 });
 
 // http://rroylance.github.io/phaser-npm-webpack-typescript-starter-project/
 // https://www.npmjs.com/package/phaser
 module.exports = {
+    target: 'node',
+    node: {
+        fs: 'empty'
+    },
     entry: {
         app: [
-            // 'babel-polyfill',
             path.resolve(__dirname, './src/main.js')
         ],
         vendor: ['pixi', 'p2', 'phaser']
@@ -43,7 +47,9 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.js$/,
+                test: /src\.js$/,
+                exclude: /node_modules/,
+                include: path.join(__dirname, 'src'),
                 use: [
                     {
                         loader: 'babel-loader',
@@ -51,8 +57,7 @@ module.exports = {
                             presets: ['es2015']
                         }
                     }
-                ],
-                include: path.join(__dirname, 'src')
+                ]
             },
             { test: /pixi\.js/, use: ['expose-loader?PIXI'] },
             { test: /phaser-split\.js$/, use: ['expose-loader?Phaser'] },

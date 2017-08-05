@@ -12,4 +12,4 @@ class MixinBuilder {
 
 }
 
-module.exports = (superclass) => new MixinBuilder(superclass);
+export default (superclass) => new MixinBuilder(superclass);

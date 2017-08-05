@@ -65,4 +65,4 @@ let Analyser = (superclass) => class extends superclass {
 
 }
 
-module.exports = Analyser;
+export default Analyser;

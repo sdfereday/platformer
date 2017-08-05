@@ -7,6 +7,12 @@ class MathHelpers {
         //The maximum is exclusive and the minimum is inclusive
     }
 
+    static clamp(v, c, mx, mn) {
+        let n = v + c;
+        mn = mn ? mn : 0;
+        return n < mn ? mn : (n > mx ? mx : n);
+    }
+
 }
 
-module.exports = MathHelpers;
+export default MathHelpers;

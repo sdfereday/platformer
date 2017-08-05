@@ -96,4 +96,4 @@ class Bug extends mix(Phaser.Sprite).with(Analyser) {
 
 }
 
-module.exports = Bug;
+export default Bug;

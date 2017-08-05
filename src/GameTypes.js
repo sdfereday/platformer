@@ -5,4 +5,4 @@ const TYPES = {
   }
 };
 
-module.exports = TYPES;
+export default TYPES;

@@ -21,8 +21,6 @@ class Player extends mix(Phaser.Sprite).with(StatManager) {
             "score": args.properties.score
         });
 
-        console.log(this.stats);
-
     }
 
     onPickup(id, val) {
@@ -36,4 +34,4 @@ class Player extends mix(Phaser.Sprite).with(StatManager) {
 
 }
 
-module.exports = Player;
+export default Player;

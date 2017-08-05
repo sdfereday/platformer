@@ -15,4 +15,4 @@ class AIHelpers {
 
 }
 
-module.exports = AIHelpers;
+export default AIHelpers;

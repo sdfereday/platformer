@@ -18,4 +18,4 @@ class BlockFactory {
 
 }
 
-module.exports = BlockFactory;
+export default BlockFactory;

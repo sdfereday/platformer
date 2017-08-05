@@ -16,4 +16,4 @@ class Block extends Phaser.Sprite {
 
 }
 
-module.exports = Block;
+export default Block;

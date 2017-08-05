@@ -21,4 +21,4 @@ class CoinBlock extends mix(Block).with() {
 
 }
 
-module.exports = CoinBlock;
+export default CoinBlock;

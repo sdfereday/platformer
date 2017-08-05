@@ -18,4 +18,4 @@ class CreatureFactory {
 
 }
 
-module.exports = CreatureFactory;
+export default CreatureFactory;

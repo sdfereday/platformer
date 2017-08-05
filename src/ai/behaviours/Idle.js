@@ -13,4 +13,4 @@ class Idle extends StateBase {
 
 }
 
-module.exports = Idle;
+export default Idle;

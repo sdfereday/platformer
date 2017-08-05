@@ -32,4 +32,4 @@ class Roam extends StateBase {
 
 };
 
-module.exports = Roam;
+export default Roam;

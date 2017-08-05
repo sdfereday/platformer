@@ -16,4 +16,4 @@ class PositionHelpers {
 
 }
 
-module.exports = PositionHelpers;
+export default PositionHelpers;

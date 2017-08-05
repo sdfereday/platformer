@@ -1,3 +1,5 @@
+import MathHelpers from "../helpers/MathHelpers";
+
 let StatManager = (superclass) => class extends superclass {
 
     populateStats(obj) {
@@ -7,7 +9,8 @@ let StatManager = (superclass) => class extends superclass {
         for (let k in obj) {
             stats.push({
                 "id": k,
-                "v": obj[k]
+                "m": obk[k].max,
+                "v": obj[k].now
             })
         }
 
@@ -16,10 +19,18 @@ let StatManager = (superclass) => class extends superclass {
     }
 
     modifyStat(id, n, stats) {
-        stats.find(x => x.id === id).v += n;
+
+        let stat = stats.find(x => x.id === id);
+
+        console.log(stat);
+
+        if(stat)
+            stat.v = MathHelpers.clamp(n, stat.v, stat.m);
+        
         console.log(id, n, stats);
+
     }
 
 };
 
-module.exports = StatManager;
+export default StatManager;

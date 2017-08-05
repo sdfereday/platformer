@@ -22,4 +22,4 @@ class Pickup extends mix(Phaser.Sprite).with() {
 
 }
 
-module.exports = Pickup;
+export default Pickup;

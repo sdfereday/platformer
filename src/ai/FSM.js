@@ -59,4 +59,4 @@ class FSM {
 
 }
 
-module.exports = FSM;
+export default FSM;
