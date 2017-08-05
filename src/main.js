@@ -3,6 +3,7 @@ import 'p2';
 import Phaser from 'phaser';
 import GameState from './states/GameState';
 
+/// So how about using TypeScript?
 // https://github.com/belohlavek/phaser-es6-boilerplate
 // We extend Phaser.Game to avoid contextual issues when attaching to the lib.
 class Game extends Phaser.Game {

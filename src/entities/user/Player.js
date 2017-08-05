@@ -15,17 +15,12 @@ class Player extends mix(Phaser.Sprite).with(StatManager) {
         this.body.maxVelocity.setTo(args.MAX_SPEED, args.MAX_SPEED * 10);
         this.body.drag.setTo(args.DRAG, 0);
 
-        this.stats = this.populateStats({
-            "hp_max": args.properties.hp_max,
-            "hp_now": args.properties.hp_now,
-            "score": args.properties.score
-        });
+        this.stats = args.properties.stats;
 
     }
 
     onPickup(id, val) {
         this.modifyStat(id, val, this.stats);
-        console.log(this.stats);
     }
 
     onDamaged(val) {

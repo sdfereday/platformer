@@ -3,8 +3,8 @@
         "id": "health",
         "type": "pickup",
         "properties": {
-            "id": "hp_now",
-            "value": 1
+            "id": "health",
+            "value": 10
         },
         "meta": {
             "name": "Heart"

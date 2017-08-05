@@ -1,11 +1,18 @@
 {
     "name": "Ralgar",
     "properties": {
-        "hp": {
-            "max": 2,
-            "now": 2
-        },
-        "lives": 3,
+        "stats": [
+            {
+                "id": "health",
+                "max": 2,
+                "current": 2
+            },
+            {
+                "id": "lives",
+                "max": 99,
+                "current": 3
+            }
+        ],
         "score": 0
     }
 }

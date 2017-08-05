@@ -12,4 +12,5 @@ class MixinBuilder {
 
 }
 
+// https://k94n.com/es6-modules-single-instance-pattern -> Revision needed
 export default (superclass) => new MixinBuilder(superclass);
