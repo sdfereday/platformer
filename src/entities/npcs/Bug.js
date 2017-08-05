@@ -26,14 +26,24 @@ class Bug extends mix(Phaser.Sprite).with(Analyser) {
         this.status = args.properties.status;
         this.gambits = args.properties.gambits;
         this.target = args.target;
+        this.props = args.properties;
 
         this.useState = this.gambits.find(x => x.isDefault).actionIfTrue;
 
         this.fsm = new FSM();
 
+        this.dead = false;
+        this.checkWorldBounds = true;
+        this.events.onOutOfBounds.add(this.onOutOfBounds, this);
+
     }
 
     update() {
+
+        if (this.dead) {
+            this.body.velocity.x = 0;
+            return;
+        }
 
         // The computation takes place in the entity, since its world status is referenced from its own pov.
         this.status.has_los = AIHelpers.inLOS(this, this.target);
@@ -91,6 +101,26 @@ class Bug extends mix(Phaser.Sprite).with(Analyser) {
         }
 
         return false;
+
+    }
+
+    ko() {
+
+        this.dead = true;
+        this.body.velocity.y = -400;
+        this.body.checkCollision.up = false;
+        this.body.checkCollision.down = false;
+        this.body.checkCollision.left = false;
+        this.body.checkCollision.right = false;
+
+        // In the small chance of out of bounds not being triggered, I may want
+        // to clean up all dead entities later on 'if' still on screen yet dead.
+
+    }
+
+    onOutOfBounds() {
+
+        this.kill();
 
     }
 

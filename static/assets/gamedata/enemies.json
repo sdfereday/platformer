@@ -18,6 +18,9 @@
             "onkill": {
                 "score": 100
             },
+            "onhit": {
+                "damagePlayer": 1
+            },
             "immunity": {
                 "top": false,
                 "left": false,

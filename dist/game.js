@@ -319,8 +319,19 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+/// Config for game
+var gameConfig = {
+  hitBounce: -500
+};
+
+// Solely for global game data only (save to own json local storage later)
+var globalGameData = {
+  score: 0
+};
+
 /// https://gamemechanicexplorer.com/#platformer-6
 // At this point GameState doesn't really need to extend anything, it's more Sprites and things that should.
+
 var GameState = function () {
   function GameState(game) {
     _classCallCheck(this, GameState);
@@ -379,7 +390,7 @@ var GameState = function () {
       var props = this.game.cache.getJSON('player').properties;
       this.player = new _Player2.default({
         game: this.game,
-        x: 4 * 32,
+        x: 6 * 32,
         y: 2 * 32,
         name: 'player',
         properties: props,
@@ -506,6 +517,35 @@ var GameState = function () {
         b.kill();
       });
 
+      // Collide with enemies, at present we only care about hitting their head, otherwise it's damage to us
+      this.game.physics.arcade.collide(this.player, this.enemies, function (player, b) {
+
+        if (player.disabled) return;
+
+        if (b.body.touching.up) {
+
+          player.body.velocity.y = gameConfig.hitBounce;
+          globalGameData.score += b.props.onkill.score;
+
+          b.ko();
+        } else {
+
+          var pa = new _phaser2.default.Point(player.x, player.y);
+          var n = pa.subtract(b.x, b.y).normalize();
+
+          player.body.maxVelocity.setTo(650, 650);
+
+          player.body.acceleration.x = 0;
+          player.body.velocity.x = n.x * 650;
+          player.body.velocity.y = -600;
+
+          player.onDamaged(b.props.onhit.damagePlayer);
+        }
+      });
+
+      if (this.player.disabled) return;
+
+      /// Input manager area
       if (this.leftInputIsActive()) {
         this.player.body.acceleration.x = -this.ACCELERATION;
       } else if (this.rightInputIsActive()) {
@@ -951,6 +991,7 @@ var Bug = function (_mix$with) {
                 _this.status = args.properties.status;
                 _this.gambits = args.properties.gambits;
                 _this.target = args.target;
+                _this.props = args.properties;
 
                 _this.useState = _this.gambits.find(function (x) {
                         return x.isDefault;
@@ -958,12 +999,21 @@ var Bug = function (_mix$with) {
 
                 _this.fsm = new _FSM2.default();
 
+                _this.dead = false;
+                _this.checkWorldBounds = true;
+                _this.events.onOutOfBounds.add(_this.onOutOfBounds, _this);
+
                 return _this;
         }
 
         _createClass(Bug, [{
                 key: 'update',
                 value: function update() {
+
+                        if (this.dead) {
+                                this.body.velocity.x = 0;
+                                return;
+                        }
 
                         // The computation takes place in the entity, since its world status is referenced from its own pov.
                         this.status.has_los = _AIHelpers2.default.inLOS(this, this.target);
@@ -1020,6 +1070,26 @@ var Bug = function (_mix$with) {
                         }
 
                         return false;
+                }
+        }, {
+                key: 'ko',
+                value: function ko() {
+
+                        this.dead = true;
+                        this.body.velocity.y = -400;
+                        this.body.checkCollision.up = false;
+                        this.body.checkCollision.down = false;
+                        this.body.checkCollision.left = false;
+                        this.body.checkCollision.right = false;
+
+                        // In the small chance of out of bounds not being triggered, I may want
+                        // to clean up all dead entities later on 'if' still on screen yet dead.
+                }
+        }, {
+                key: 'onOutOfBounds',
+                value: function onOutOfBounds() {
+
+                        this.kill();
                 }
         }]);
 
@@ -1604,7 +1674,7 @@ exports.default = Block;
 
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+        value: true
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -1626,40 +1696,54 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var Player = function (_mix$with) {
-    _inherits(Player, _mix$with);
+        _inherits(Player, _mix$with);
 
-    function Player(args) {
-        _classCallCheck(this, Player);
+        function Player(args) {
+                _classCallCheck(this, Player);
 
-        var _this = _possibleConstructorReturn(this, (Player.__proto__ || Object.getPrototypeOf(Player)).call(this, args.game, args.x, args.y, args.name));
+                var _this = _possibleConstructorReturn(this, (Player.__proto__ || Object.getPrototypeOf(Player)).call(this, args.game, args.x, args.y, args.name));
 
-        args.game.add.existing(_this);
+                args.game.add.existing(_this);
 
-        var game = args.game;
+                var game = args.game;
+                _this.game = game;
 
-        game.physics.enable(_this, Phaser.Physics.ARCADE);
-        _this.body.collideWorldBounds = true;
-        _this.body.maxVelocity.setTo(args.MAX_SPEED, args.MAX_SPEED * 10);
-        _this.body.drag.setTo(args.DRAG, 0);
+                game.physics.enable(_this, Phaser.Physics.ARCADE);
+                _this.body.collideWorldBounds = true;
+                _this.body.maxVelocity.setTo(args.MAX_SPEED, args.MAX_SPEED * 10);
+                _this.body.drag.setTo(args.DRAG, 0);
 
-        _this.stats = args.properties.stats;
+                _this.disabled = false;
+                _this.stats = args.properties.stats;
 
-        return _this;
-    }
-
-    _createClass(Player, [{
-        key: 'onPickup',
-        value: function onPickup(id, val) {
-            this.modifyStat(id, val, this.stats);
+                return _this;
         }
-    }, {
-        key: 'onDamaged',
-        value: function onDamaged(val) {
-            // ...
-        }
-    }]);
 
-    return Player;
+        _createClass(Player, [{
+                key: 'onPickup',
+                value: function onPickup(id, val) {
+                        this.modifyStat(id, val, this.stats);
+                }
+        }, {
+                key: 'onDamaged',
+                value: function onDamaged(val) {
+
+                        this.disabled = true;
+
+                        this.alpha = 0;
+
+                        this.flashTween = this.game.add.tween(this).to({ alpha: 1 }, 10, "Linear", true, 0, -1);
+                        this.flashTween.yoyo(true, 10);
+
+                        this.game.time.events.add(Phaser.Timer.SECOND * 0.6, function () {
+                                this.disabled = false;
+                                this.alpha = 1;
+                                this.flashTween.stop();
+                        }, this);
+                }
+        }]);
+
+        return Player;
 }((0, _Mixin2.default)(Phaser.Sprite).with(_StatManager2.default));
 
 exports.default = Player;

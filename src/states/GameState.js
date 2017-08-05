@@ -8,6 +8,16 @@ import CreatureFactory from '../factories/CreatureFactory';
 import BlockFactory from '../factories/BlockFactory';
 import Player from '../entities/user/Player';
 
+/// Config for game
+const gameConfig = {
+  hitBounce: -500
+};
+
+// Solely for global game data only (save to own json local storage later)
+let globalGameData = {
+  score: 0
+};
+
 /// https://gamemechanicexplorer.com/#platformer-6
 // At this point GameState doesn't really need to extend anything, it's more Sprites and things that should.
 class GameState {
@@ -61,7 +71,7 @@ class GameState {
     let props = this.game.cache.getJSON('player').properties;
     this.player = new Player({
       game: this.game,
-      x: 4 * 32,
+      x: 6 * 32,
       y: 2 * 32,
       name: 'player',
       properties: props,
@@ -179,6 +189,40 @@ class GameState {
       b.kill();
     });
 
+    // Collide with enemies, at present we only care about hitting their head, otherwise it's damage to us
+    this.game.physics.arcade.collide(this.player, this.enemies, function (player, b) {
+      
+      if(player.disabled)
+        return;
+      
+      if(b.body.touching.up) {
+        
+        player.body.velocity.y = gameConfig.hitBounce;
+        globalGameData.score += b.props.onkill.score;
+
+        b.ko();
+
+      } else {
+
+        let pa = new Phaser.Point(player.x, player.y);
+        let n = pa.subtract(b.x, b.y).normalize();
+
+        player.body.maxVelocity.setTo(650, 650);
+
+        player.body.acceleration.x = 0;
+        player.body.velocity.x = n.x * 650;
+        player.body.velocity.y = -600;
+        
+        player.onDamaged(b.props.onhit.damagePlayer);
+
+      }
+
+    });
+
+    if(this.player.disabled)
+      return;
+
+    /// Input manager area
     if (this.leftInputIsActive()) {
       this.player.body.acceleration.x = -this.ACCELERATION;
     } else if (this.rightInputIsActive()) {
